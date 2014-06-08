@@ -1,4 +1,4 @@
-module PGSchemaExaminer
+module PGExaminer
   class Result
     class Table
       attr_reader :result, :row

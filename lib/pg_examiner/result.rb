@@ -1,8 +1,8 @@
-require 'pg_schema_examiner/result/column'
-require 'pg_schema_examiner/result/schema'
-require 'pg_schema_examiner/result/table'
+require 'pg_examiner/result/column'
+require 'pg_examiner/result/schema'
+require 'pg_examiner/result/table'
 
-module PGSchemaExaminer
+module PGExaminer
   class Result
     attr_reader :pg_namespace, :pg_attribute, :pg_class, :pg_type, :pg_attrdef
 
