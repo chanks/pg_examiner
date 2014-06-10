@@ -8,6 +8,10 @@ module PGExaminer
         @row    = row
       end
 
+      def oid
+        row['oid']
+      end
+
       def name
         row['nspname']
       end

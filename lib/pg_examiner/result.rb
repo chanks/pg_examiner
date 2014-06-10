@@ -1,4 +1,5 @@
 require 'pg_examiner/result/column'
+require 'pg_examiner/result/extension'
 require 'pg_examiner/result/schema'
 require 'pg_examiner/result/table'
 
@@ -14,10 +15,15 @@ module PGExaminer
       @pg_type      = execute "SELECT oid, * FROM pg_type"
       @pg_attrdef   = execute "SELECT oid, * FROM pg_attrdef"
       @pg_attribute = execute "SELECT * FROM pg_attribute"
+      @pg_extension = execute "SELECT * FROM pg_extension"
     end
 
     def schemas
       @schemas ||= @pg_namespace.map { |row| Schema.new(self, row) }
+    end
+
+    def extensions
+      @extensions ||= @pg_extension.map{|row| Extension.new(self, row)}.sort_by(&:name)
     end
 
     private
