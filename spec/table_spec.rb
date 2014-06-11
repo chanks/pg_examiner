@@ -207,4 +207,62 @@ describe PGExaminer do
 
     one.should_not == two
   end
+
+  it "should consider unlogged and temporary tables as different from permanent tables" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+    SQL
+
+    two = examine <<-SQL
+      CREATE UNLOGGED TABLE test_table (
+        a integer
+      )
+    SQL
+
+    three = examine <<-SQL
+      CREATE TEMPORARY TABLE test_table (
+        a integer
+      )
+    SQL
+
+    one.should_not == two
+    one.should_not == three
+    two.should_not == three
+  end
+
+  it "should consider additional specified options when comparing tables" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      )
+      WITH (fillfactor=90);
+    SQL
+
+    three = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      )
+      WITH (fillfactor=70);
+    SQL
+
+    four = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+      ALTER TABLE test_table SET (fillfactor=70);
+    SQL
+
+    one.should_not == two
+    one.should_not == three
+    two.should_not == three
+    three.should == four
+  end
 end

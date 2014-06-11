@@ -1,7 +1,7 @@
 module PGExaminer
   class Result
     class Table < Base
-      COMPARISON_COLUMNS = %w(relname)
+      COMPARISON_COLUMNS = %w(relname relpersistence reloptions)
 
       def name
         row['relname']

@@ -20,9 +20,7 @@ In a dropped column's pg_attribute entry, atttypid is reset to zero, but attlen 
 
 pg_class: (http://www.postgresql.org/docs/9.3/static/catalog-pg-class.html)
 relam: index type
-relpersistence: logged/unlogged/temporary
 relkind: table/index/view/sequence/matview/composite type/...
-reloptions: fillfactor?
 
 pg_constraint:
 conname: name
