@@ -2,14 +2,13 @@ require 'spec_helper'
 
 describe PGExaminer do
   it "should be able to tell when a table exists" do
-    execute <<-SQL
+    result = examine <<-SQL
       CREATE TABLE test_table (
         id serial,
         body text
       )
     SQL
 
-    result = PGExaminer.examine(CONNECTION)
     result.should be_an_instance_of PGExaminer::Result
     result.schemas.length.should == 1
 
@@ -36,12 +35,11 @@ describe PGExaminer do
   end
 
   it "should order tables by name" do
-    execute <<-SQL
+    result = examine <<-SQL
       CREATE TABLE table_a ();
       CREATE TABLE table_b ();
     SQL
 
-    result = PGExaminer.examine(CONNECTION)
     result.should be_an_instance_of PGExaminer::Result
     result.schemas.length.should == 1
 

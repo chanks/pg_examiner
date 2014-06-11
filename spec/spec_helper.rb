@@ -11,16 +11,15 @@ CONNECTION = PG::Connection.open :host     => uri.host,
                                  :dbname   => uri.path[1..-1]
 
 RSpec.configure do |config|
-  config.around do |spec|
+  def examine(sql)
     execute "BEGIN"
-    begin
-      spec.run
-    ensure
-      execute "ROLLBACK"
-    end
+    execute(sql)
+    PGExaminer.examine(CONNECTION)
+  ensure
+    execute "ROLLBACK"
   end
 
   def execute(*args)
-    CONNECTION.async_exec(*args)
+    CONNECTION.async_exec(*args).to_a
   end
 end

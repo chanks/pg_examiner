@@ -2,15 +2,14 @@ require 'spec_helper'
 
 describe PGExaminer do
   it "should be able to examine the extensions in the db" do
-    result = PGExaminer.examine(CONNECTION)
+    result = examine "SELECT 1"
     result.should be_an_instance_of PGExaminer::Result
     result.extensions.map(&:name).should == ['plpgsql']
 
-    execute <<-SQL
+    result = examine <<-SQL
       CREATE EXTENSION citext;
     SQL
 
-    result = PGExaminer.examine(CONNECTION)
     result.extensions.length.should == 2
 
     citext, plpgsql = result.extensions # Ordered by name
