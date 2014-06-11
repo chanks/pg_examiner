@@ -1,6 +1,8 @@
 module PGExaminer
   class Result
     class Column < Base
+      COMPARISON_COLUMNS = %w(attname)
+
       def name
         row['attname']
       end

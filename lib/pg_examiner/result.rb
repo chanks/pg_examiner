@@ -15,16 +15,26 @@ module PGExaminer
       @pg_class     = execute "SELECT oid, * FROM pg_class"
       @pg_type      = execute "SELECT oid, * FROM pg_type"
       @pg_attrdef   = execute "SELECT oid, pg_get_expr(adbin, adrelid) AS default, * FROM pg_attrdef"
-      @pg_attribute = execute "SELECT * FROM pg_attribute"
+      @pg_attribute = execute "SELECT * FROM pg_attribute WHERE NOT attisdropped"
       @pg_extension = execute "SELECT * FROM pg_extension"
     end
 
     def schemas
-      @schemas ||= @pg_namespace.map { |row| Schema.new(self, row) }
+      @schemas ||= @pg_namespace.map{|row| Schema.new(self, row)}
     end
 
     def extensions
       @extensions ||= @pg_extension.map{|row| Extension.new(self, row)}.sort_by(&:name)
+    end
+
+    def ==(other)
+      other.is_a?(Result) &&
+        schemas == other.schemas &&
+        extensions == other.extensions
+    end
+
+    def inspect
+      "#<#{self.class} @schemas=#{@schemas.inspect}, @extensions=#{@extensions.inspect}>"
     end
 
     private

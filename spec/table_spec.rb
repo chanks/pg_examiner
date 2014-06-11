@@ -49,4 +49,91 @@ describe PGExaminer do
     schema.tables.length.should == 2
     schema.tables.map(&:name).should == %w(table_a table_b)
   end
+
+  it "should consider equivalent tables equivalent" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        id serial,
+        body text
+      )
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        id serial,
+        body text
+      )
+    SQL
+
+    one.should == two
+  end
+
+  it "should consider non-equivalent tables non-equivalent" do
+    one = examine <<-SQL
+      CREATE TABLE test_table_a (
+        id serial,
+        body text
+      )
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table_b (
+        id serial,
+        body text
+      )
+    SQL
+
+    one.should_not == two
+  end
+
+  it "should consider tables with current columns in the same order equivalent" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        b integer,
+        c integer
+      );
+
+      ALTER TABLE test_table DROP COLUMN b;
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        c integer
+      );
+    SQL
+
+    three = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD COLUMN c integer;
+    SQL
+
+    one.should == two
+    one.should == three
+    two.should == three
+  end
+
+  it "should consider tables with columns in differing orders not equivalent" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        b integer,
+        c integer
+      );
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        c integer,
+        b integer
+      )
+    SQL
+
+    one.should_not == two
+  end
 end

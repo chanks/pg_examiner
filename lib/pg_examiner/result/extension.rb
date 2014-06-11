@@ -1,6 +1,8 @@
 module PGExaminer
   class Result
     class Extension < Base
+      COMPARISON_COLUMNS = %w(extname)
+
       def name
         row['extname']
       end
