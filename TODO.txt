@@ -12,10 +12,7 @@ aggsortopaggtranstype
 agginitval
 
 pg_attribute: (http://www.postgresql.org/docs/9.3/static/catalog-pg-attribute.html)
-attndims to differentiate between text and text[] (necessary?)
-atttypmod is used for things like varchar
 attstorage for toast storage configuration
-attnotnull for not null constraint
 attinhcount: to do with inheritance?
 attcollation: defined collation for a column
 attoptions: 

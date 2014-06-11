@@ -1,7 +1,7 @@
 module PGExaminer
   class Result
     class Column < Base
-      COMPARISON_COLUMNS = %w(attname)
+      COMPARISON_COLUMNS = %w(attname attndims attnotnull atttypmod)
 
       def name
         row['attname']

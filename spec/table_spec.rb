@@ -159,4 +159,52 @@ describe PGExaminer do
     one.should_not == two
     one.should_not == three
   end
+
+  it "should consider array types as different from scalar types" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer[]
+      )
+    SQL
+
+    one.should_not == two
+  end
+
+  it "should consider the presence of not-null constraints" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer not null
+      )
+    SQL
+
+    one.should_not == two
+  end
+
+  it "should consider the presence of type-specific data" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a varchar(49)
+      );
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a varchar(50)
+      )
+    SQL
+
+    one.should_not == two
+  end
 end
