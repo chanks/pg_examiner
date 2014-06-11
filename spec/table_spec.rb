@@ -34,4 +34,21 @@ describe PGExaminer do
     body.type.should == 'text'
     body.default.should == nil
   end
+
+  it "should order tables by name" do
+    execute <<-SQL
+      CREATE TABLE table_a ();
+      CREATE TABLE table_b ();
+    SQL
+
+    result = PGExaminer.examine(CONNECTION)
+    result.should be_an_instance_of PGExaminer::Result
+    result.schemas.length.should == 1
+
+    schema = result.schemas.first
+    schema.should be_an_instance_of PGExaminer::Result::Schema
+    schema.name.should == 'public'
+    schema.tables.length.should == 2
+    schema.tables.map(&:name).should == %w(table_a table_b)
+  end
 end
