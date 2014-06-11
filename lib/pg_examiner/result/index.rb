@@ -1,7 +1,7 @@
 module PGExaminer
   class Result
     class Index < Base
-      COMPARISON_COLUMNS = %w(name filter)
+      COMPARISON_COLUMNS = %w(name filter indisunique indisprimary)
 
       def expression
         @row['expression'] || @row['indkey'].split.map{|i| parent.columns.find{|c| c.row['attnum'] == i}}.map(&:name)

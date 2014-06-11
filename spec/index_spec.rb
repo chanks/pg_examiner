@@ -123,4 +123,34 @@ describe PGExaminer do
     one.should_not == three
     two.should_not == three
   end
+
+  it "should consider the uniqueness and primary key status of an index, if any" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE INDEX int_idx ON test_table(a);
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE UNIQUE INDEX int_idx ON test_table(a);
+    SQL
+
+    three = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD PRIMARY KEY (a);
+    SQL
+
+    one.should_not == two
+    one.should_not == three
+    two.should_not == three
+  end
 end
