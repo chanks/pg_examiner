@@ -3,13 +3,13 @@ module PGExaminer
     class Index < Base
       COMPARISON_COLUMNS = %w(name filter)
 
-      def column_names
-        @row['indkey'].split.map{|i| parent.columns.find{|c| c.row['attnum'] == i}}.map(&:name)
+      def expression
+        @row['expression'] || @row['indkey'].split.map{|i| parent.columns.find{|c| c.row['attnum'] == i}}.map(&:name)
       end
 
       def ==(other)
         super &&
-          column_names == other.column_names
+          expression == other.expression
       end
     end
   end

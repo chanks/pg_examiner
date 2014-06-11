@@ -93,4 +93,34 @@ describe PGExaminer do
     one.should_not == three
     two.should_not == three
   end
+
+  it "should consider the expressions indexes are on, if any" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a text
+      );
+
+      CREATE INDEX text_idx ON test_table(lower(a));
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a text
+      );
+
+      CREATE INDEX text_idx ON test_table(LOWER(a));
+    SQL
+
+    three = examine <<-SQL
+      CREATE TABLE test_table (
+        a text
+      );
+
+      CREATE INDEX text_idx ON test_table(a);
+    SQL
+
+    one.should == two
+    one.should_not == three
+    two.should_not == three
+  end
 end
