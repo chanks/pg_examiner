@@ -19,22 +19,36 @@ describe PGExaminer do
 
     c = examine <<-SQL
       CREATE TABLE test_table (
-        a integer
+        a integer CONSTRAINT con CHECK (a > 0)
       );
-
-      ALTER TABLE test_table ADD CONSTRAINT con_two CHECK (a > 0);
     SQL
 
     d = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
+
+      ALTER TABLE test_table ADD CONSTRAINT con_two CHECK (a > 0);
+    SQL
+
+    e = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer CHECK (a > 0)
+      );
+    SQL
+
+    f = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
     SQL
 
     a.should == b
-    a.should_not == c
-    b.should_not == c
+    a.should == c
+    b.should == c
     a.should_not == d
-    b.should_not == d
+    a.should_not == e
+    a.should_not == f
+    e.should_not == f
   end
 end
