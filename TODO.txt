@@ -58,20 +58,13 @@ evtevent
 evtfoid
 
 pg_index (http://www.postgresql.org/docs/9.3/static/catalog-pg-index.html)
-indexrelid
-indrelid
-indisunique
-indisprimary
 indisexclusion
 indimmediate
 indisclustered
 indisvalid?
 indisready?
 indislive?
-indkey (int2vector)
 indnatts?
-indexprs for expression indices (use nodeToString())
-indpred for partial indices (use nodeToString())
 
 pg_inherits (http://www.postgresql.org/docs/9.3/static/catalog-pg-inherits.html)
 inhrelid
