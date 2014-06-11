@@ -1,11 +1,7 @@
 module PGExaminer
   class Result
     class Index < Base
-      COMPARISON_COLUMNS = %w(relname)
-
-      def name
-        row['relname']
-      end
+      COMPARISON_COLUMNS = %w(name)
     end
   end
 end

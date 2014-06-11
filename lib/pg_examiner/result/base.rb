@@ -11,6 +11,10 @@ module PGExaminer
         @row['oid']
       end
 
+      def name
+        @row['name']
+      end
+
       def ==(other)
         columns = self.class::COMPARISON_COLUMNS
         self.class == other.class && row.values_at(*columns) == other.row.values_at(*columns)

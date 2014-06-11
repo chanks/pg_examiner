@@ -1,11 +1,7 @@
 module PGExaminer
   class Result
     class Table < Base
-      COMPARISON_COLUMNS = %w(relname relpersistence reloptions)
-
-      def name
-        row['relname']
-      end
+      COMPARISON_COLUMNS = %w(name relpersistence reloptions)
 
       def columns
         @columns ||= result.pg_attribute.select do |c|

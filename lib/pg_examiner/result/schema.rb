@@ -1,11 +1,7 @@
 module PGExaminer
   class Result
     class Schema < Base
-      COMPARISON_COLUMNS = %w(nspname)
-
-      def name
-        row['nspname']
-      end
+      COMPARISON_COLUMNS = %w(name)
 
       def tables
         @tables ||= result.pg_class.select do |c|

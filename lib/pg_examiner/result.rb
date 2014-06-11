@@ -44,7 +44,7 @@ module PGExaminer
       # wouldn't be a good practice for anyone to name a custom schema
       # starting with pg_ anyway.
       @pg_namespace = execute <<-SQL
-        SELECT oid, nspname
+        SELECT oid, nspname AS name
         FROM pg_namespace
         WHERE nspname != 'information_schema'
         AND nspname NOT LIKE 'pg_%'
@@ -53,7 +53,7 @@ module PGExaminer
       schema_oids = @pg_namespace.map{|ns| "'#{ns['oid']}'"}
 
       @pg_class = execute <<-SQL
-        SELECT oid, relname, relkind, relpersistence, reloptions, relnamespace
+        SELECT oid, relname AS name, relkind, relpersistence, reloptions, relnamespace
         FROM pg_class
         WHERE relnamespace IN (#{schema_oids.join(', ')})
       SQL
@@ -63,7 +63,7 @@ module PGExaminer
       @pg_attribute =
         if table_oids.any?
           execute <<-SQL
-            SELECT atttypid, attname, attndims, attnotnull, atttypmod, attrelid, atthasdef
+            SELECT atttypid, attname AS name, attndims, attnotnull, atttypmod, attrelid, atthasdef
             FROM pg_attribute
             WHERE attrelid IN (#{table_oids.join(', ')})
             AND attnum > 0       -- No system columns
@@ -77,7 +77,7 @@ module PGExaminer
 
       @pg_type = if att_oids.any?
         execute <<-SQL
-          SELECT oid, typname
+          SELECT oid, typname AS name
           FROM pg_type
           WHERE oid IN (#{att_oids.join(', ')})
         SQL
@@ -87,7 +87,7 @@ module PGExaminer
 
       @pg_index = if table_oids.any?
         execute <<-SQL
-          SELECT c.relname, i.indrelid
+          SELECT c.relname AS name, i.indrelid
           FROM pg_index i
           JOIN pg_class c ON c.oid = i.indexrelid
           WHERE c.oid IN (#{table_oids.join(', ')})
@@ -102,7 +102,7 @@ module PGExaminer
       SQL
 
       @pg_extension = execute <<-SQL
-        SELECT extname, extnamespace, extversion
+        SELECT extname AS name, extnamespace, extversion
         FROM pg_extension
       SQL
     end

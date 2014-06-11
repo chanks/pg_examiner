@@ -1,14 +1,10 @@
 module PGExaminer
   class Result
     class Column < Base
-      COMPARISON_COLUMNS = %w(attname attndims attnotnull atttypmod)
-
-      def name
-        row['attname']
-      end
+      COMPARISON_COLUMNS = %w(name attndims attnotnull atttypmod)
 
       def type
-        @type ||= result.pg_type.find{|t| t['oid'] == row['atttypid']}['typname']
+        @type ||= result.pg_type.find{|t| t['oid'] == row['atttypid']}['name']
       end
 
       def default
