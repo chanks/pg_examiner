@@ -1,0 +1,151 @@
+(Notes on other system tables and columns that seem useful)
+
+
+
+
+
+pg_aggregate (http://www.postgresql.org/docs/9.3/static/catalog-pg-aggregate.html)
+aggfnoid
+aggtransfn
+aggfinalfn
+aggsortopaggtranstype
+agginitval
+
+pg_attribute: (http://www.postgresql.org/docs/9.3/static/catalog-pg-attribute.html)
+attndims to differentiate between text and text[] (necessary?)
+atttypmod is used for things like varchar
+attstorage for toast storage configuration
+attnotnull for not null constraint
+attinhcount: to do with inheritance?
+attcollation: defined collation for a column
+attoptions: 
+In a dropped column's pg_attribute entry, atttypid is reset to zero, but attlen and the other fields copied from pg_type are still valid. This arrangement is needed to cope with the situation where the dropped column's data type was later dropped, and so there is no pg_type row anymore. attlen and the other fields can be used to interpret the contents of a row of the table.
+
+pg_class: (http://www.postgresql.org/docs/9.3/static/catalog-pg-class.html)
+relam: index type
+relpersistence: logged/unlogged/temporary
+relkind: table/index/view/sequence/matview/composite type/...
+reloptions: fillfactor?
+
+pg_constraint:
+conname: name
+connamespace: schema oid?
+contype: check/foreign key/primary key/exclusion/unique/trigger
+condeferrable:
+condeferred:
+convalidated:
+conrelid: table
+contypid: constraint on domain?
+conindid:
+confrelid: which table a foreign key is on
+confupdtype: ON UPDATE...
+confdeltype: ON DELETE...
+confmatchtype: MATCH TYPE
+conkey
+confkey
+conexclop
+Use pg_get_constraintdef() to get definition
+
+pg_description (http://www.postgresql.org/docs/9.3/static/catalog-pg-description.html)
+objoid
+classoid
+objsubid
+description
+
+pg_enum (http://www.postgresql.org/docs/9.3/static/catalog-pg-enum.html)
+enumtypid
+enumsortorder (don't care about exact values, just order)
+enumlabel
+
+pg_event_trigger (http://www.postgresql.org/docs/9.3/static/catalog-pg-event-trigger.html)
+evtname
+evtevent
+evtfoid
+
+pg_index (http://www.postgresql.org/docs/9.3/static/catalog-pg-index.html)
+indexrelid
+indrelid
+indisunique
+indisprimary
+indisexclusion
+indimmediate
+indisclustered
+indisvalid?
+indisready?
+indislive?
+indkey (int2vector)
+indnatts?
+indexprs for expression indices (use nodeToString())
+indpred for partial indices (use nodeToString())
+
+pg_inherits (http://www.postgresql.org/docs/9.3/static/catalog-pg-inherits.html)
+inhrelid
+inhparent
+inhseqno
+
+pg_language (http://www.postgresql.org/docs/9.3/static/catalog-pg-language.html)
+lanname
+
+pg_proc (http://www.postgresql.org/docs/9.3/static/catalog-pg-proc.html)
+proname
+pronamespace
+procost
+prorows?
+provariadic
+proisagg
+proiswindow
+proleakproof?
+proisstrict
+proretset
+provolatile
+pronargs
+pronargdefaults
+prorettype
+proargtypes
+proallargtypes
+proargmodes
+proargnames
+nodeToString(proargdefaults)
+
+pg_trigger (http://www.postgresql.org/docs/9.3/static/catalog-pg-trigger.html)
+tgrelid
+tgname
+tgfoid
+tgtype
+tgisinternal
+tgconstrrelid
+togconstrindid
+tgconstraint
+tgdeferrable
+tginitdeferred
+tgnargs
+tgattr
+tgargs
+tgqual (nodeToString())
+
+pg_type (http://www.postgresql.org/docs/9.3/static/catalog-pg-type.html)
+typname
+typnamespace
+typlen
+typbyval
+typtype
+typdelim
+typrelid
+typelem
+typarray
+typalign
+typstorage
+typnotnull
+typbasetype
+typndims
+typdefault
+
+pg_views (http://www.postgresql.org/docs/9.3/static/view-pg-views.html)
+schemaname
+viewname
+definition? or can get all this from pg_class?
+
+pg_matviews (http://www.postgresql.org/docs/9.3/static/view-pg-matviews.html)
+schemaname
+matviewname
+definition
