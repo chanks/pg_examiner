@@ -15,7 +15,7 @@ module PGExaminer
           @default
         else
           @default_calculated = true
-          @default = result.pg_attrdef.find{|d| d['adrelid'] == row['attrelid']}['adsrc'] if row['atthasdef'] == 't'
+          @default = result.pg_attrdef.find{|d| d['adrelid'] == row['attrelid']}['default'] if row['atthasdef'] == 't'
         end
       end
     end
