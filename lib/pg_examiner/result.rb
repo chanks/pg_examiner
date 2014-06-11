@@ -63,7 +63,7 @@ module PGExaminer
       @pg_attribute =
         if table_oids.any?
           execute <<-SQL
-            SELECT atttypid, attname AS name, attndims, attnotnull, atttypmod, attrelid, atthasdef
+            SELECT atttypid, attname AS name, attndims, attnotnull, atttypmod, attrelid, atthasdef, attnum
             FROM pg_attribute
             WHERE attrelid IN (#{table_oids.join(', ')})
             AND attnum > 0       -- No system columns
@@ -87,7 +87,7 @@ module PGExaminer
 
       @pg_index = if table_oids.any?
         execute <<-SQL
-          SELECT c.relname AS name, i.indrelid
+          SELECT c.relname AS name, i.indrelid, i.indkey
           FROM pg_index i
           JOIN pg_class c ON c.oid = i.indexrelid
           WHERE c.oid IN (#{table_oids.join(', ')})

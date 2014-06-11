@@ -30,4 +30,37 @@ describe PGExaminer do
     one.should_not == three
     two.should_not == three
   end
+
+  it "should consider the columns indexes are on when determining equivalency" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        b integer
+      );
+
+      CREATE INDEX int_idx ON test_table(a);
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        b integer
+      );
+
+      CREATE INDEX int_idx ON test_table(b);
+    SQL
+
+    three = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        b integer
+      );
+
+      CREATE INDEX int_idx ON test_table(a, b);
+    SQL
+
+    one.should_not == two
+    one.should_not == three
+    two.should_not == three
+  end
 end
