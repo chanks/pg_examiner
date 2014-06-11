@@ -119,4 +119,33 @@ describe PGExaminer do
     b.should_not == e
     d.should_not == e
   end
+
+  it "should consider constraints when determining table equivalency" do
+    a = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        CONSTRAINT con CHECK (a > 0) NOT VALID
+      );
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        CONSTRAINT con CHECK (a > 0)
+      );
+    SQL
+
+    c = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        CONSTRAINT con CHECK (a > 0) NOT VALID
+      );
+
+      ALTER TABLE test_table VALIDATE CONSTRAINT con;
+    SQL
+
+    a.should_not == b
+    a.should_not == c
+    b.should == c
+  end
 end
