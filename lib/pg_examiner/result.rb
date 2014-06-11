@@ -11,14 +11,7 @@ module PGExaminer
 
     def initialize(connection)
       @conn = connection
-
-      @pg_namespace = execute "SELECT oid, * FROM pg_namespace WHERE nspname != 'information_schema' AND nspname NOT LIKE 'pg_%'"
-      @pg_class     = execute "SELECT oid, * FROM pg_class"
-      @pg_type      = execute "SELECT oid, * FROM pg_type"
-      @pg_index     = execute "SELECT * FROM pg_index JOIN pg_class ON pg_class.oid = pg_index.indexrelid"
-      @pg_attrdef   = execute "SELECT oid, pg_get_expr(adbin, adrelid) AS default, * FROM pg_attrdef"
-      @pg_attribute = execute "SELECT * FROM pg_attribute WHERE NOT attisdropped"
-      @pg_extension = execute "SELECT * FROM pg_extension"
+      load_schema
     end
 
     def schemas
@@ -43,6 +36,75 @@ module PGExaminer
 
     def execute(*args)
       @conn.async_exec(*args).to_a
+    end
+
+    def load_schema
+      # Get all relevant schemas/namespaces, which includes public but not
+      # information_schema or system schemas, which are prefixed with pg_. It
+      # wouldn't be a good practice for anyone to name a custom schema
+      # starting with pg_ anyway.
+      @pg_namespace = execute <<-SQL
+        SELECT oid, nspname
+        FROM pg_namespace
+        WHERE nspname != 'information_schema'
+        AND nspname NOT LIKE 'pg_%'
+      SQL
+
+      schema_oids = @pg_namespace.map{|ns| "'#{ns['oid']}'"}
+
+      @pg_class = execute <<-SQL
+        SELECT oid, relname, relkind, relpersistence, reloptions, relnamespace
+        FROM pg_class
+        WHERE relnamespace IN (#{schema_oids.join(', ')})
+      SQL
+
+      table_oids = @pg_class.map{|ns| "'#{ns['oid']}'"}
+
+      @pg_attribute =
+        if table_oids.any?
+          execute <<-SQL
+            SELECT atttypid, attname, attndims, attnotnull, atttypmod, attrelid, atthasdef
+            FROM pg_attribute
+            WHERE attrelid IN (#{table_oids.join(', ')})
+            AND attnum > 0       -- No system columns
+            AND NOT attisdropped -- Still active
+          SQL
+        else
+          []
+        end
+
+      att_oids = @pg_attribute.map{|a| "'#{a['atttypid']}'"}
+
+      @pg_type = if att_oids.any?
+        execute <<-SQL
+          SELECT oid, typname
+          FROM pg_type
+          WHERE oid IN (#{att_oids.join(', ')})
+        SQL
+      else
+        []
+      end
+
+      @pg_index = if table_oids.any?
+        execute <<-SQL
+          SELECT c.relname, i.indrelid
+          FROM pg_index i
+          JOIN pg_class c ON c.oid = i.indexrelid
+          WHERE c.oid IN (#{table_oids.join(', ')})
+        SQL
+      else
+        []
+      end
+
+      @pg_attrdef = execute <<-SQL
+        SELECT oid, adrelid, pg_get_expr(adbin, adrelid) AS default
+        FROM pg_attrdef
+      SQL
+
+      @pg_extension = execute <<-SQL
+        SELECT extname, extnamespace, extversion
+        FROM pg_extension
+      SQL
     end
   end
 end

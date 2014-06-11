@@ -9,8 +9,7 @@ module PGExaminer
 
       def columns
         @columns ||= result.pg_attribute.select do |c|
-          c['attrelid'] == oid &&
-          c['attnum'].to_i > 0 # System columns have negative numbers.
+          c['attrelid'] == oid
         end.sort_by{|c| c['attnum'].to_i}.map { |row| Column.new(result, row) }
       end
 
