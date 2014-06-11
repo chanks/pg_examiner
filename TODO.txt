@@ -23,23 +23,17 @@ relam: index type
 relkind: table/index/view/sequence/matview/composite type/...
 
 pg_constraint:
-conname: name
 connamespace: schema oid?
 contype: check/foreign key/primary key/exclusion/unique/trigger
 condeferrable:
 condeferred:
-convalidated:
-conrelid: table
 contypid: constraint on domain?
 conindid:
 confrelid: which table a foreign key is on
-confupdtype: ON UPDATE...
-confdeltype: ON DELETE...
 confmatchtype: MATCH TYPE
 conkey
 confkey
 conexclop
-Use pg_get_constraintdef() to get definition
 
 pg_description (http://www.postgresql.org/docs/9.3/static/catalog-pg-description.html)
 objoid
