@@ -15,10 +15,17 @@ module PGExaminer
         end.map{|row| Index.new(result, row, self)}.sort_by(&:name)
       end
 
+      def constraints
+        @constraints ||= result.pg_constraint.select do |c|
+          c['conrelid'] == oid
+        end.map{|row| Constraint.new(result, row, self)}.sort_by(&:name)
+      end
+
       def ==(other)
         super &&
-          columns == other.columns &&
-          indexes == other.indexes
+          columns     == other.columns &&
+          indexes     == other.indexes &&
+          constraints == other.constraints
       end
     end
   end

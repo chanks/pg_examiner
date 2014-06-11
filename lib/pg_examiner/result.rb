@@ -1,5 +1,6 @@
 require 'pg_examiner/result/base'
 require 'pg_examiner/result/column'
+require 'pg_examiner/result/constraint'
 require 'pg_examiner/result/extension'
 require 'pg_examiner/result/index'
 require 'pg_examiner/result/schema'
@@ -7,7 +8,14 @@ require 'pg_examiner/result/table'
 
 module PGExaminer
   class Result
-    attr_reader :pg_namespace, :pg_class, :pg_type, :pg_index, :pg_attrdef, :pg_attribute, :pg_extension
+    attr_reader :pg_namespace,
+                :pg_class,
+                :pg_type,
+                :pg_index,
+                :pg_attrdef,
+                :pg_attribute,
+                :pg_extension,
+                :pg_constraint
 
     def initialize(connection)
       @conn = connection
@@ -77,6 +85,13 @@ module PGExaminer
         FROM pg_index i
         JOIN pg_class c ON c.oid = i.indexrelid
         WHERE c.oid IN (?)
+      SQL
+
+      @pg_constraint = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
+        SELECT oid, conname AS name, conrelid,
+          pg_get_constraintdef(oid) AS definition
+        FROM pg_constraint c
+        WHERE conrelid IN (?)
       SQL
 
       @pg_attrdef = execute <<-SQL
