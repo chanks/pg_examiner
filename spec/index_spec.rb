@@ -63,4 +63,34 @@ describe PGExaminer do
     one.should_not == three
     two.should_not == three
   end
+
+  it "should consider the filters indexes have when determining equivalency" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE INDEX int_idx ON test_table(a) WHERE a > 0;
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE INDEX int_idx ON test_table(a) WHERE a > 0;
+    SQL
+
+    three = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE INDEX int_idx ON test_table(a);
+    SQL
+
+    one.should == two
+    one.should_not == three
+    two.should_not == three
+  end
 end

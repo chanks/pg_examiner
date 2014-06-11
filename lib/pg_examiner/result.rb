@@ -87,7 +87,7 @@ module PGExaminer
 
       @pg_index = if table_oids.any?
         execute <<-SQL
-          SELECT c.relname AS name, i.indrelid, i.indkey
+          SELECT c.relname AS name, i.indrelid, i.indkey, pg_get_expr(i.indpred, i.indexrelid) AS filter
           FROM pg_index i
           JOIN pg_class c ON c.oid = i.indexrelid
           WHERE c.oid IN (#{table_oids.join(', ')})
