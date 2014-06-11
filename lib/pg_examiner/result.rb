@@ -1,3 +1,4 @@
+require 'pg_examiner/result/base'
 require 'pg_examiner/result/column'
 require 'pg_examiner/result/extension'
 require 'pg_examiner/result/schema'

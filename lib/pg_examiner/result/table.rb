@@ -1,13 +1,6 @@
 module PGExaminer
   class Result
-    class Table
-      attr_reader :result, :row
-
-      def initialize(result, row)
-        @result = result
-        @row    = row
-      end
-
+    class Table < Base
       def name
         row['relname']
       end

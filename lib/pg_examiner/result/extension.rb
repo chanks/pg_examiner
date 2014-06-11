@@ -1,13 +1,6 @@
 module PGExaminer
   class Result
-    class Extension
-      attr_reader :result, :row
-
-      def initialize(result, row)
-        @result = result
-        @row    = row
-      end
-
+    class Extension < Base
       def name
         row['extname']
       end
