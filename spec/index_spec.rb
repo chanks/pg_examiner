@@ -73,6 +73,8 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(a) WHERE a > 0;
     SQL
 
+    one.schemas.first.tables.first.indexes.first.row['filter'].should == '(a > 0)'
+
     two = examine <<-SQL
       CREATE TABLE test_table (
         a integer
@@ -80,6 +82,8 @@ describe PGExaminer do
 
       CREATE INDEX int_idx ON test_table(a) WHERE a > 0;
     SQL
+
+    two.schemas.first.tables.first.indexes.first.row['filter'].should == '(a > 0)'
 
     three = examine <<-SQL
       CREATE TABLE test_table (
@@ -103,6 +107,8 @@ describe PGExaminer do
       CREATE INDEX text_idx ON test_table(lower(a));
     SQL
 
+    one.schemas.first.tables.first.indexes.first.expression.should == 'lower(a)'
+
     two = examine <<-SQL
       CREATE TABLE test_table (
         a text
@@ -110,6 +116,8 @@ describe PGExaminer do
 
       CREATE INDEX text_idx ON test_table(LOWER(a));
     SQL
+
+    two.schemas.first.tables.first.indexes.first.expression.should == 'lower(a)'
 
     three = examine <<-SQL
       CREATE TABLE test_table (
