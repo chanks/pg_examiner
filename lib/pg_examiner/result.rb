@@ -50,51 +50,34 @@ module PGExaminer
         AND nspname NOT LIKE 'pg_%'
       SQL
 
-      schema_oids = @pg_namespace.map{|ns| "'#{ns['oid']}'"}
-
-      @pg_class = execute <<-SQL
+      @pg_class = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
         SELECT oid, relname AS name, relkind, relpersistence, reloptions, relnamespace
         FROM pg_class
-        WHERE relnamespace IN (#{schema_oids.join(', ')})
+        WHERE relnamespace IN (?)
       SQL
 
-      table_oids = @pg_class.map{|ns| "'#{ns['oid']}'"}
+      @pg_attribute = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
+        SELECT atttypid, attname AS name, attndims, attnotnull, atttypmod, attrelid, atthasdef, attnum
+        FROM pg_attribute
+        WHERE attrelid IN (?)
+        AND attnum > 0       -- No system columns
+        AND NOT attisdropped -- Still active
+      SQL
 
-      @pg_attribute =
-        if table_oids.any?
-          execute <<-SQL
-            SELECT atttypid, attname AS name, attndims, attnotnull, atttypmod, attrelid, atthasdef, attnum
-            FROM pg_attribute
-            WHERE attrelid IN (#{table_oids.join(', ')})
-            AND attnum > 0       -- No system columns
-            AND NOT attisdropped -- Still active
-          SQL
-        else
-          []
-        end
+      @pg_type = load_table @pg_attribute.map{|a| a['atttypid']}, <<-SQL
+        SELECT oid, typname AS name
+        FROM pg_type
+        WHERE oid IN (?)
+      SQL
 
-      att_oids = @pg_attribute.map{|a| "'#{a['atttypid']}'"}
-
-      @pg_type = if att_oids.any?
-        execute <<-SQL
-          SELECT oid, typname AS name
-          FROM pg_type
-          WHERE oid IN (#{att_oids.join(', ')})
-        SQL
-      else
-        []
-      end
-
-      @pg_index = if table_oids.any?
-        execute <<-SQL
-          SELECT c.relname AS name, i.indrelid, i.indkey, pg_get_expr(i.indpred, i.indexrelid) AS filter, pg_get_expr(i.indexprs, i.indrelid) AS expression, indisunique, indisprimary
-          FROM pg_index i
-          JOIN pg_class c ON c.oid = i.indexrelid
-          WHERE c.oid IN (#{table_oids.join(', ')})
-        SQL
-      else
-        []
-      end
+      @pg_index = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
+        SELECT c.relname AS name, i.indrelid, i.indkey, indisunique, indisprimary,
+          pg_get_expr(i.indpred, i.indexrelid) AS filter,
+          pg_get_expr(i.indexprs, i.indrelid) AS expression
+        FROM pg_index i
+        JOIN pg_class c ON c.oid = i.indexrelid
+        WHERE c.oid IN (?)
+      SQL
 
       @pg_attrdef = execute <<-SQL
         SELECT oid, adrelid, pg_get_expr(adbin, adrelid) AS default
@@ -105,6 +88,14 @@ module PGExaminer
         SELECT extname AS name, extnamespace, extversion
         FROM pg_extension
       SQL
+    end
+
+    def load_table(oids, sql)
+      if oids.any?
+        execute sql.gsub(/\?/, oids.map{|oid| "'#{oid}'"}.join(', '))
+      else
+        []
+      end
     end
   end
 end
