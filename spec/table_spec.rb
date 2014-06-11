@@ -68,7 +68,7 @@ describe PGExaminer do
     one.should == two
   end
 
-  it "should consider non-equivalent tables non-equivalent" do
+  it "should consider differently-named tables non-equivalent" do
     one = examine <<-SQL
       CREATE TABLE test_table_a (
         id serial,
