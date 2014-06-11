@@ -1,10 +1,10 @@
 module PGExaminer
   class Result
     class Base
-      attr_reader :result, :row
+      attr_reader :result, :row, :parent
 
-      def initialize(result, row)
-        @result, @row = result, row
+      def initialize(result, row, parent = nil)
+        @result, @row, @parent = result, row, parent
       end
 
       def oid
