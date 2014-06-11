@@ -14,7 +14,8 @@ module PGExaminer
       end
 
       def ==(other)
-        super && tables == other.tables
+        super &&
+          tables == other.tables
       end
     end
   end

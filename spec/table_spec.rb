@@ -136,4 +136,27 @@ describe PGExaminer do
 
     one.should_not == two
   end
+
+  it "should consider tables with columns of differing types not equivalent" do
+    one = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+    SQL
+
+    two = examine <<-SQL
+      CREATE TABLE test_table (
+        a text
+      )
+    SQL
+
+    three = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer default 5
+      );
+    SQL
+
+    one.should_not == two
+    one.should_not == three
+  end
 end

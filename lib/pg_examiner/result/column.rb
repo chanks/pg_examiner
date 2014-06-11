@@ -20,6 +20,12 @@ module PGExaminer
           @default = result.pg_attrdef.find{|d| d['adrelid'] == row['attrelid']}['default'] if row['atthasdef'] == 't'
         end
       end
+
+      def ==(other)
+        super &&
+          type == other.type &&
+          default == other.default
+      end
     end
   end
 end

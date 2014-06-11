@@ -15,7 +15,8 @@ module PGExaminer
       end
 
       def ==(other)
-        super && columns == other.columns
+        super &&
+          columns == other.columns
       end
     end
   end
