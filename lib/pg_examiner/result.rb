@@ -4,6 +4,7 @@ require 'pg_examiner/result/constraint'
 require 'pg_examiner/result/extension'
 require 'pg_examiner/result/function'
 require 'pg_examiner/result/index'
+require 'pg_examiner/result/language'
 require 'pg_examiner/result/schema'
 require 'pg_examiner/result/table'
 
@@ -17,7 +18,8 @@ module PGExaminer
                 :pg_attribute,
                 :pg_extension,
                 :pg_constraint,
-                :pg_proc
+                :pg_proc,
+                :pg_language
 
     def initialize(connection)
       @conn = connection
@@ -32,10 +34,15 @@ module PGExaminer
       @extensions ||= @pg_extension.map{|row| Extension.new(self, row)}.sort_by(&:name)
     end
 
+    def languages
+      @languages ||= @pg_language.map{|row| Language.new(self, row)}.sort_by(&:name)
+    end
+
     def ==(other)
       other.is_a?(Result) &&
-        schemas == other.schemas &&
-        extensions == other.extensions
+        schemas    == other.schemas &&
+        extensions == other.extensions &&
+        languages  == other.languages
     end
 
     def inspect
@@ -109,6 +116,11 @@ module PGExaminer
       @pg_extension = execute <<-SQL
         SELECT extname AS name, extnamespace, extversion
         FROM pg_extension
+      SQL
+
+      @pg_language = execute <<-SQL
+        SELECT oid, lanname AS name
+        FROM pg_language
       SQL
     end
 
