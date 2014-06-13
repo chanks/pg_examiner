@@ -300,9 +300,101 @@ describe PGExaminer do
     b.should_not == c
   end
 
-  it "should be able to differentiate between triggers by their parent tables"
+  it "should be able to differentiate between triggers by their parent tables" do
+    a = examine <<-SQL
+      CREATE TABLE test_table_a (
+        a integer
+      );
 
-  it "should be able to differentiate between triggers by their associated functions"
+      CREATE TABLE test_table_b (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE TRIGGER trig BEFORE INSERT ON test_table_a FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table_a (
+        a integer
+      );
+
+      CREATE TABLE test_table_b (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE TRIGGER trig BEFORE INSERT ON test_table_b FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    a.should_not == b
+  end
+
+  it "should be able to differentiate between triggers by their associated functions" do
+    a = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func1() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE FUNCTION func2() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE TRIGGER trig BEFORE INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func1();
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func1() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE FUNCTION func2() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE TRIGGER trig BEFORE INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func2();
+    SQL
+
+    a.should_not == b
+  end
 
   it "should be able to differentiate between triggers by their firing conditions" do
     a = examine <<-SQL

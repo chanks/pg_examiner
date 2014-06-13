@@ -105,7 +105,7 @@ module PGExaminer
       SQL
 
       @pg_trigger = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
-        SELECT oid, tgname AS name, tgrelid, tgtype
+        SELECT oid, tgname AS name, tgrelid, tgtype, tgfoid
         FROM pg_trigger
         WHERE tgrelid IN (?)
         AND tgconstrrelid = '0' -- Ignore foreign key triggers, which have unpredictable names.
@@ -117,7 +117,7 @@ module PGExaminer
       SQL
 
       @pg_proc = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
-        SELECT proname AS name, pronamespace, proargtypes, prorettype, proargmodes, prolang, pg_get_functiondef(oid) AS definition
+        SELECT oid, proname AS name, pronamespace, proargtypes, prorettype, proargmodes, prolang, pg_get_functiondef(oid) AS definition
         FROM pg_proc
         WHERE pronamespace IN (?)
         AND NOT proisagg -- prevent pg_get_functiondef() from throwing errors on aggregate functions.
