@@ -101,7 +101,7 @@ module PGExaminer
       SQL
 
       @pg_proc = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
-        SELECT proname AS name, pronamespace, proargtypes
+        SELECT proname AS name, pronamespace, proargtypes, prorettype, proargmodes
         FROM pg_proc
         WHERE pronamespace IN (?)
       SQL
