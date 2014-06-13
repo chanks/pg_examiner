@@ -41,10 +41,14 @@ module PGExaminer
     end
 
     def ==(other)
+      # We want to be able to compare the contents of two schemas to each
+      # other, so compare names at the top level instead of schema-to-schema.
+
       other.is_a?(Result) &&
-        schemas    == other.schemas &&
-        extensions == other.extensions &&
-        languages  == other.languages
+        schemas.map(&:name) == other.schemas.map(&:name) &&
+        schemas             == other.schemas &&
+        extensions          == other.extensions &&
+        languages           == other.languages
     end
 
     def inspect

@@ -38,9 +38,17 @@ Or install it yourself as:
 ## Usage
 
 ``` ruby
-  # Need PG::Connection objects.
-  state1 = PGExaminer.examine(connection1)
-  state2 = PGExaminer.examine(connection2)
+  # Need a PG::Connection object. See your ORM's documentation for how to get one.
+
+  # To make sure migrations work right:
+  state1 = PGExaminer.examine(connection)
+  # Migrate up then down.
+  state2 = PGExaminer.examine(connection)
+  state1 == state2 # => true or false
+
+  # To make sure schema1 and schema2 have the same contents:
+  state1 = PGExaminer.examine(connection, :schema1)
+  state2 = PGExaminer.examine(connection, :schema2)
   state1 == state2 # => true or false
 ```
 

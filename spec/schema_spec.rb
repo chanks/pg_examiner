@@ -20,4 +20,24 @@ describe PGExaminer do
     result.schemas.length.should == 2
     result.schemas.map(&:name).should == %w(my_schema public)
   end
+
+  it "should be able to compare the contents of different schemas" do
+    a = examine <<-SQL, :schema1
+      CREATE SCHEMA schema1;
+      CREATE TABLE schema1.test_table (
+        a integer,
+        b integer
+      );
+    SQL
+
+    b = examine <<-SQL, :schema2
+      CREATE SCHEMA schema2;
+      CREATE TABLE schema2.test_table (
+        a integer,
+        b integer
+      );
+    SQL
+
+    a.should == b
+  end
 end

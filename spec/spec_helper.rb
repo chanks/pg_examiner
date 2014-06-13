@@ -11,10 +11,10 @@ CONNECTION = PG::Connection.open :host     => uri.host,
                                  :dbname   => uri.path[1..-1]
 
 RSpec.configure do |config|
-  def examine(sql)
+  def examine(sql, schema = nil)
     execute "BEGIN"
     execute(sql)
-    PGExaminer.examine(CONNECTION)
+    PGExaminer.examine(CONNECTION, schema)
   ensure
     execute "ROLLBACK"
   end
