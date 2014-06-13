@@ -102,7 +102,27 @@ describe PGExaminer do
     b.should_not == c
   end
 
-  it "should be able to differentiate between functions by their languages"
+  it "should be able to differentiate between functions by their languages" do
+    a = examine <<-SQL
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL
+
+    b = examine <<-SQL
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        BEGIN
+          RETURN one + two;
+        END
+      $$
+      LANGUAGE PLPGSQL;
+    SQL
+
+    a.should_not == b
+  end
 
   it "should be able to differentiate between functions by their other flags"
 
