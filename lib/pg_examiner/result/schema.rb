@@ -9,9 +9,16 @@ module PGExaminer
         end.map{|row| Table.new(result, row, self)}.sort_by(&:name)
       end
 
+      def functions
+        @functions ||= result.pg_proc.select do |c|
+          c['pronamespace'] == oid
+        end.map{|row| Function.new(result, row, self)}.sort_by(&:name)
+      end
+
       def ==(other)
         super &&
-          tables == other.tables
+          tables    == other.tables &&
+          functions == other.functions
       end
     end
   end

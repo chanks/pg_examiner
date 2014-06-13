@@ -2,6 +2,7 @@ require 'pg_examiner/result/base'
 require 'pg_examiner/result/column'
 require 'pg_examiner/result/constraint'
 require 'pg_examiner/result/extension'
+require 'pg_examiner/result/function'
 require 'pg_examiner/result/index'
 require 'pg_examiner/result/schema'
 require 'pg_examiner/result/table'
@@ -15,7 +16,8 @@ module PGExaminer
                 :pg_attrdef,
                 :pg_attribute,
                 :pg_extension,
-                :pg_constraint
+                :pg_constraint,
+                :pg_proc
 
     def initialize(connection)
       @conn = connection
@@ -97,6 +99,12 @@ module PGExaminer
       @pg_attrdef = execute <<-SQL
         SELECT oid, adrelid, pg_get_expr(adbin, adrelid) AS default
         FROM pg_attrdef
+      SQL
+
+      @pg_proc = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
+        SELECT proname AS name, pronamespace
+        FROM pg_proc
+        WHERE pronamespace IN (?)
       SQL
 
       @pg_extension = execute <<-SQL
