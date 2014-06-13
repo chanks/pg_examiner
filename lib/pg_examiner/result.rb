@@ -74,10 +74,9 @@ module PGExaminer
         AND NOT attisdropped -- Still active
       SQL
 
-      @pg_type = load_table @pg_attribute.map{|a| a['atttypid']}, <<-SQL
+      @pg_type = execute <<-SQL
         SELECT oid, typname AS name
         FROM pg_type
-        WHERE oid IN (?)
       SQL
 
       @pg_index = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
@@ -102,7 +101,7 @@ module PGExaminer
       SQL
 
       @pg_proc = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
-        SELECT proname AS name, pronamespace
+        SELECT proname AS name, pronamespace, proargtypes
         FROM pg_proc
         WHERE pronamespace IN (?)
       SQL

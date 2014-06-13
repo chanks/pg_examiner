@@ -31,7 +31,34 @@ describe PGExaminer do
     b.should_not == c
   end
 
-  it "should be able to differentiate functions by their argument types" # and numbers/variadic
+  it "should be able to differentiate functions by their argument types" do
+    a = examine <<-SQL
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL
+
+    b = examine <<-SQL
+      CREATE FUNCTION add(one integer, two integer, three integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL
+
+    c = examine <<-SQL
+      CREATE FUNCTION add_numbers(one integer, two integer, VARIADIC integers integer[]) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL
+
+    a.should_not == b
+    a.should_not == c
+  end
 
   it "should be able to differentiate functions by their return types"
 
