@@ -7,6 +7,7 @@ require 'pg_examiner/result/index'
 require 'pg_examiner/result/language'
 require 'pg_examiner/result/schema'
 require 'pg_examiner/result/table'
+require 'pg_examiner/result/trigger'
 
 module PGExaminer
   class Result
@@ -19,7 +20,8 @@ module PGExaminer
                 :pg_extension,
                 :pg_constraint,
                 :pg_proc,
-                :pg_language
+                :pg_language,
+                :pg_trigger
 
     def initialize(connection)
       @conn = connection
@@ -100,6 +102,13 @@ module PGExaminer
           pg_get_constraintdef(oid) AS definition
         FROM pg_constraint c
         WHERE conrelid IN (?)
+      SQL
+
+      @pg_trigger = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
+        SELECT oid, tgname AS name, tgrelid
+        FROM pg_trigger
+        WHERE tgrelid IN (?)
+        AND tgconstrrelid = '0' -- Ignore foreign key triggers, which have unpredictable names.
       SQL
 
       @pg_attrdef = execute <<-SQL

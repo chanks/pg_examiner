@@ -21,11 +21,18 @@ module PGExaminer
         end.map{|row| Constraint.new(result, row, self)}.sort_by(&:name)
       end
 
+      def triggers
+        @triggers ||= result.pg_trigger.select do |t|
+          t['tgrelid'] == oid
+        end.map{|row| Trigger.new(result, row, self)}.sort_by(&:name)
+      end
+
       def ==(other)
         super &&
           columns     == other.columns &&
           indexes     == other.indexes &&
-          constraints == other.constraints
+          constraints == other.constraints &&
+          triggers    == other.triggers
       end
     end
   end

@@ -246,7 +246,59 @@ describe PGExaminer do
     a.should_not == d
   end
 
-  it "should be able to differentiate between triggers by their names"
+  it "should be able to differentiate between triggers by their names" do
+    a = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE TRIGGER trig BEFORE INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE TRIGGER trig BEFORE INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    c = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE TRIGGER trig2 BEFORE INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    a.should == b
+    a.should_not == c
+    b.should_not == c
+  end
 
   it "should be able to differentiate between triggers by their parent tables"
 
