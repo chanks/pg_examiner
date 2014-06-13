@@ -65,21 +65,11 @@ inhrelid
 inhparent
 inhseqno
 
-pg_language (http://www.postgresql.org/docs/9.3/static/catalog-pg-language.html)
-lanname
-
 pg_proc (http://www.postgresql.org/docs/9.3/static/catalog-pg-proc.html)
-proname
-pronamespace
-procost
-prorows?
-provariadic
 proisagg
 proiswindow
 proleakproof?
-proisstrict
 proretset
-provolatile
 pronargs
 pronargdefaults
 prorettype
@@ -90,9 +80,6 @@ proargnames
 nodeToString(proargdefaults)
 
 pg_trigger (http://www.postgresql.org/docs/9.3/static/catalog-pg-trigger.html)
-tgrelid
-tgname
-tgfoid
 tgtype
 tgisinternal
 tgconstrrelid
