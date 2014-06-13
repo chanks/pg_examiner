@@ -27,7 +27,7 @@ module PGExaminer
     end
 
     def schemas
-      @schemas ||= @pg_namespace.map{|row| Schema.new(self, row)}
+      @schemas ||= @pg_namespace.map{|row| Schema.new(self, row)}.sort_by(&:name)
     end
 
     def extensions

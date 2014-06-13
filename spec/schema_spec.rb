@@ -18,6 +18,6 @@ describe PGExaminer do
     SQL
 
     result.schemas.length.should == 2
-    result.schemas.map(&:name).should == %w(public my_schema)
+    result.schemas.map(&:name).should == %w(my_schema public)
   end
 end
