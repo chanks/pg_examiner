@@ -105,7 +105,7 @@ module PGExaminer
       SQL
 
       @pg_trigger = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
-        SELECT oid, tgname AS name, tgrelid
+        SELECT oid, tgname AS name, tgrelid, tgtype
         FROM pg_trigger
         WHERE tgrelid IN (?)
         AND tgconstrrelid = '0' -- Ignore foreign key triggers, which have unpredictable names.
