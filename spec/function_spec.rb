@@ -3,7 +3,7 @@ require 'spec_helper'
 describe PGExaminer do
   it "should be able to differentiate between functions by their names" do
     a = examine <<-SQL_FUNCTION
-      CREATE FUNCTION add(one integer, two integer) RETURNS integer 
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
       AS $$
         SELECT one + two
       $$
@@ -11,7 +11,7 @@ describe PGExaminer do
     SQL_FUNCTION
 
     b = examine <<-SQL_FUNCTION
-      CREATE FUNCTION add(one integer, two integer) RETURNS integer 
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
       AS $$
         SELECT one + two
       $$
@@ -19,7 +19,7 @@ describe PGExaminer do
     SQL_FUNCTION
 
     c = examine <<-SQL_FUNCTION
-      CREATE FUNCTION add_numbers(one integer, two integer) RETURNS integer 
+      CREATE FUNCTION add_numbers(one integer, two integer) RETURNS integer
       AS $$
         SELECT one + two
       $$
@@ -72,7 +72,25 @@ describe PGExaminer do
     c.should_not == d
   end
 
-  it "should be able to differentiate between functions by their argument defaults"
+  it "should be able to differentiate between functions by their argument defaults" do
+    a = examine <<-SQL_FUNCTION
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL_FUNCTION
+
+    b = examine <<-SQL_FUNCTION
+      CREATE FUNCTION add(one integer, two integer DEFAULT 42) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL_FUNCTION
+
+    a.should_not == b
+  end
 
   it "should be able to differentiate between functions by their return types" do
     a = examine <<-SQL_FUNCTION
