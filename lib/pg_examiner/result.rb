@@ -108,9 +108,10 @@ module PGExaminer
       SQL
 
       @pg_proc = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
-        SELECT proname AS name, pronamespace, proargtypes, prorettype, proargmodes, prolang
+        SELECT proname AS name, pronamespace, proargtypes, prorettype, proargmodes, prolang, pg_get_functiondef(oid) AS definition
         FROM pg_proc
         WHERE pronamespace IN (?)
+        AND NOT proisagg -- prevent pg_get_functiondef() from throwing errors on aggregate functions.
       SQL
 
       @pg_extension = execute <<-SQL

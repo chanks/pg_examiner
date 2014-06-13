@@ -126,9 +126,27 @@ describe PGExaminer do
 
   it "should be able to differentiate between functions by their other flags"
 
-  it "should be able to differentiate between functions by their contents"
+  it "should be able to differentiate between functions by their definitions" do
+    a = examine <<-SQL
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL
 
-  it "should be able differentiate between functions by their volatility"
+    b = examine <<-SQL
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT two + one
+      $$
+      LANGUAGE SQL;
+    SQL
+
+    a.should_not == b
+  end
+
+  it "should be able to differentiate between functions by their volatility"
 
   it "should be able to differentiate between triggers by their names"
 

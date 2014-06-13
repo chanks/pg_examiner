@@ -1,7 +1,7 @@
 module PGExaminer
   class Result
     class Function < Base
-      COMPARISON_COLUMNS = %w(name proargmodes)
+      COMPARISON_COLUMNS = %w(name proargmodes definition)
 
       def argument_types
         @argument_types ||= @row['proargtypes'].split.map do |oid|
