@@ -126,7 +126,46 @@ describe PGExaminer do
     a.should_not == b
   end
 
-  it "should be able to differentiate between functions by their other flags"
+  it "should be able to differentiate between functions by their other flags" do
+    a = examine <<-SQL_FUNCTION
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL_FUNCTION
+
+    b = examine <<-SQL_FUNCTION
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL
+      COST 0.1;
+    SQL_FUNCTION
+
+    c = examine <<-SQL_FUNCTION
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL
+      RETURNS NULL ON NULL INPUT;
+    SQL_FUNCTION
+
+    d = examine <<-SQL_FUNCTION
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL
+      STRICT;
+    SQL_FUNCTION
+
+    a.should_not == b
+    a.should_not == c
+    a.should_not == d
+  end
 
   it "should be able to differentiate between functions by their definitions" do
     a = examine <<-SQL_FUNCTION
