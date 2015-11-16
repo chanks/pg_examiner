@@ -11,6 +11,8 @@ CONNECTION = PG::Connection.open :host     => uri.host,
                                  :dbname   => uri.path[1..-1]
 
 RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = [:expect, :should] }
+
   def examine(sql, schema = nil)
     execute "BEGIN"
     execute(sql)
