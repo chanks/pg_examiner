@@ -1,7 +1,13 @@
 module PGExaminer
   class Result
-    class Column < Base
-      COMPARISON_COLUMNS = %w(name attndims attnotnull atttypmod)
+    class Column < Item
+      def diffable_methods
+        [:type, :default]
+      end
+
+      def diffable_attrs
+        [:name, :attndims, :attnotnull, :atttypmod]
+      end
 
       def type
         @type ||= result.pg_type.find{|t| t['oid'] == row['atttypid']}['name']
@@ -15,12 +21,6 @@ module PGExaminer
           @default_calculated = true
           @default = result.pg_attrdef.find{|d| d['adrelid'] == row['attrelid']}['default'] if row['atthasdef'] == 't'
         end
-      end
-
-      def ==(other)
-        super &&
-          type == other.type &&
-          default == other.default
       end
     end
   end

@@ -1,16 +1,7 @@
-require 'pg_examiner/result/base'
-require 'pg_examiner/result/column'
-require 'pg_examiner/result/constraint'
-require 'pg_examiner/result/extension'
-require 'pg_examiner/result/function'
-require 'pg_examiner/result/index'
-require 'pg_examiner/result/language'
-require 'pg_examiner/result/schema'
-require 'pg_examiner/result/table'
-require 'pg_examiner/result/trigger'
+require 'pg_examiner/base'
 
 module PGExaminer
-  class Result
+  class Result < Base
     attr_reader :pg_namespace,
                 :pg_class,
                 :pg_type,
@@ -28,6 +19,10 @@ module PGExaminer
       load_schema
     end
 
+    def diffable_lists
+      [:schemas, :extensions, :languages]
+    end
+
     def schemas
       @schemas ||= @pg_namespace.map{|row| Schema.new(self, row)}.sort_by(&:name)
     end
@@ -38,36 +33,6 @@ module PGExaminer
 
     def languages
       @languages ||= @pg_language.map{|row| Language.new(self, row)}.sort_by(&:name)
-    end
-
-    def ==(other)
-      # We want to be able to compare the contents of two schemas to each
-      # other, so compare names at the top level instead of schema-to-schema.
-
-      other.is_a?(Result) &&
-        schemas.map(&:name) == other.schemas.map(&:name) &&
-        schemas             == other.schemas &&
-        extensions          == other.extensions &&
-        languages           == other.languages
-    end
-
-    def diff(other)
-      r = {}
-
-      this = schemas.map(&:name)
-      that = other.schemas.map(&:name)
-
-      unless this == that
-        added   = that - this
-        removed = this - that
-
-        h = {}
-        h[:added]   = added   if added.any?
-        h[:removed] = removed if removed.any?
-        r[:schemas] = h
-      end
-
-      r
     end
 
     def inspect
@@ -166,3 +131,14 @@ module PGExaminer
     end
   end
 end
+
+require 'pg_examiner/result/item'
+require 'pg_examiner/result/column'
+require 'pg_examiner/result/constraint'
+require 'pg_examiner/result/extension'
+require 'pg_examiner/result/function'
+require 'pg_examiner/result/index'
+require 'pg_examiner/result/language'
+require 'pg_examiner/result/schema'
+require 'pg_examiner/result/table'
+require 'pg_examiner/result/trigger'

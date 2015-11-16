@@ -1,7 +1,13 @@
 module PGExaminer
   class Result
-    class Function < Base
-      COMPARISON_COLUMNS = %w(name proargmodes definition)
+    class Function < Item
+      def diffable_attrs
+        [:name, :proargmodes, :definition]
+      end
+
+      def diffable_methods
+        [:argument_types, :return_type, :language]
+      end
 
       def argument_types
         @argument_types ||= @row['proargtypes'].split.map do |oid|
@@ -15,13 +21,6 @@ module PGExaminer
 
       def language
         @language ||= result.pg_language.find{|l| l['oid'] == @row['prolang']}['name']
-      end
-
-      def ==(other)
-        super &&
-          argument_types == other.argument_types &&
-          return_type    == other.return_type &&
-          language       == other.language
       end
     end
   end

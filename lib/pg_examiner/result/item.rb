@@ -1,6 +1,6 @@
 module PGExaminer
   class Result
-    class Base
+    class Item < Base
       attr_reader :result, :row, :parent
 
       def initialize(result, row, parent = nil)
@@ -13,11 +13,6 @@ module PGExaminer
 
       def name
         @row['name']
-      end
-
-      def ==(other)
-        columns = self.class::COMPARISON_COLUMNS
-        self.class == other.class && row.values_at(*columns) == other.row.values_at(*columns)
       end
 
       def inspect

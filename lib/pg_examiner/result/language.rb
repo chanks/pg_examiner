@@ -1,7 +1,9 @@
 module PGExaminer
   class Result
-    class Language < Base
-      COMPARISON_COLUMNS = %w(name)
+    class Language < Item
+      def diffable_attrs
+        [:name]
+      end
     end
   end
 end

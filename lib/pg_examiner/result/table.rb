@@ -1,7 +1,13 @@
 module PGExaminer
   class Result
-    class Table < Base
-      COMPARISON_COLUMNS = %w(name relpersistence reloptions)
+    class Table < Item
+      def diffable_lists
+        [:columns, :indexes, :constraints, :triggers]
+      end
+
+      def diffable_attrs
+        [:name, :relpersistence, :reloptions]
+      end
 
       def columns
         @columns ||= result.pg_attribute.select do |c|
@@ -25,14 +31,6 @@ module PGExaminer
         @triggers ||= result.pg_trigger.select do |t|
           t['tgrelid'] == oid
         end.map{|row| Trigger.new(result, row, self)}.sort_by(&:name)
-      end
-
-      def ==(other)
-        super &&
-          columns     == other.columns &&
-          indexes     == other.indexes &&
-          constraints == other.constraints &&
-          triggers    == other.triggers
       end
     end
   end

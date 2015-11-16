@@ -1,7 +1,9 @@
 module PGExaminer
   class Result
-    class Constraint < Base
-      COMPARISON_COLUMNS = %w(name definition)
+    class Constraint < Item
+      def diffable_attrs
+        [:name, :definition]
+      end
     end
   end
 end

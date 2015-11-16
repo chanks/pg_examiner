@@ -148,4 +148,6 @@ describe PGExaminer do
     a.should_not == c
     b.should == c
   end
+
+  it "should consider the tables each constraint is on"
 end

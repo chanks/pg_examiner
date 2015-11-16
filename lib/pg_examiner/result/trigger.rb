@@ -1,15 +1,16 @@
 module PGExaminer
   class Result
-    class Trigger < Base
-      COMPARISON_COLUMNS = %w(name tgtype)
+    class Trigger < Item
+      def diffable_attrs
+        [:name, :tgtype]
+      end
+
+      def diffable_methods
+        [:function]
+      end
 
       def function
         @function ||= result.pg_proc.find{|f| f['oid'] == @row['tgfoid']}['name']
-      end
-
-      def ==(other)
-        super &&
-          function == other.function
       end
     end
   end
