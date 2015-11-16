@@ -20,6 +20,25 @@ module PGExaminer
           tables    == other.tables &&
           functions == other.functions
       end
+
+
+      def diff(other)
+        d = {}
+        this = tables.map(&:name)
+        that = other.tables.map(&:name)
+
+        unless this == that
+          added   = that - this
+          removed = this - that
+
+          h = {}
+          h[:added]   = added   if added.any?
+          h[:removed] = removed if removed.any?
+          d[:tables] = h
+        end
+
+        d
+      end
     end
   end
 end

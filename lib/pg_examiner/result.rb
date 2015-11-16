@@ -51,6 +51,25 @@ module PGExaminer
         languages           == other.languages
     end
 
+    def diff(other)
+      r = {}
+
+      this = schemas.map(&:name)
+      that = other.schemas.map(&:name)
+
+      unless this == that
+        added   = that - this
+        removed = this - that
+
+        h = {}
+        h[:added]   = added   if added.any?
+        h[:removed] = removed if removed.any?
+        r[:schemas] = h
+      end
+
+      r
+    end
+
     def inspect
       "#<#{self.class} @schemas=#{@schemas.inspect}, @extensions=#{@extensions.inspect}>"
     end
