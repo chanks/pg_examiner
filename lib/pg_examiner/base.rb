@@ -42,11 +42,9 @@ module PGExaminer
         those_names = those.map(&:name)
 
         if these_names == those_names
-          result = these.zip(those).inject({}) do |memo, (this, that)|
+          result = these.zip(those).each_with_object({}) do |(this, that), hash|
             if (result = this.diff(that)).any?
-              memo.merge(this.name => result)
-            else
-              memo
+              hash[this.name] = result
             end
           end
 
