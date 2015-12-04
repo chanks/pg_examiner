@@ -51,43 +51,45 @@ describe PGExaminer do
   end
 
   it "should consider equivalent tables equivalent" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         id serial,
         body text
       )
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         id serial,
         body text
       )
     SQL
 
-    one.should == two
+    a.should == b
   end
 
   it "should consider differently-named tables non-equivalent" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table_a (
         id serial,
         body text
       )
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table_b (
         id serial,
         body text
       )
     SQL
 
-    one.should_not == two
+    a.should_not == b
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{:added=>["test_table_b"], :removed=>["test_table_a"]}}}}
   end
 
   it "should consider tables with current columns in the same order equivalent" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
         b integer,
@@ -97,14 +99,14 @@ describe PGExaminer do
       ALTER TABLE test_table DROP COLUMN b;
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
         c integer
       );
     SQL
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
@@ -112,13 +114,13 @@ describe PGExaminer do
       ALTER TABLE test_table ADD COLUMN c integer;
     SQL
 
-    one.should == two
-    one.should == three
-    two.should == three
+    a.should == b
+    a.should == c
+    b.should == c
   end
 
   it "should consider tables with columns in differing orders not equivalent" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
         b integer,
@@ -126,7 +128,7 @@ describe PGExaminer do
       );
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
         c integer,
@@ -134,135 +136,154 @@ describe PGExaminer do
       )
     SQL
 
-    one.should_not == two
+    a.should_not == b
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{}}}}}}
   end
 
   it "should consider tables with columns of differing types not equivalent" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a text
       )
     SQL
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TABLE test_table (
         a integer default 5
       );
     SQL
 
-    one.should_not == two
-    one.should_not == three
+    a.should_not == b
+    a.should_not == c
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:type=>{"int4"=>"text"}}}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:default=>{nil=>"5"}}}}}}}}
   end
 
   it "should consider array types as different from scalar types" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a integer[]
       )
     SQL
 
-    one.should_not == two
+    a.should_not == b
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:attndims=>{"0"=>"1"}, :type=>{"int4"=>"_int4"}}}}}}}}
   end
 
   it "should consider the presence of not-null constraints" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a integer not null
       )
     SQL
 
-    one.should_not == two
+    a.should_not == b
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:attnotnull=>{"f"=>"t"}}}}}}}}
   end
 
   it "should consider the presence of type-specific data" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a varchar(49)
       );
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a varchar(50)
       )
     SQL
 
-    one.should_not == two
+    a.should_not == b
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:atttypmod=>{"53"=>"54"}}}}}}}}
   end
 
   it "should consider unlogged and temporary tables as different from permanent tables" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE UNLOGGED TABLE test_table (
         a integer
       )
     SQL
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TEMPORARY TABLE test_table (
         a integer
       )
     SQL
 
-    one.should_not == two
-    one.should_not == three
-    two.should_not == three
+    a.should_not == b
+    a.should_not == c
+    b.should_not == c
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:relpersistence=>{"p"=>"u"}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{:removed=>["test_table"]}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{:removed=>["test_table"]}}}}
   end
 
   it "should consider additional specified options when comparing tables" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       )
       WITH (fillfactor=90);
     SQL
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       )
       WITH (fillfactor=70);
     SQL
 
-    four = examine <<-SQL
+    d = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
       ALTER TABLE test_table SET (fillfactor=70);
     SQL
 
-    one.should_not == two
-    one.should_not == three
-    two.should_not == three
-    three.should == four
+    a.should_not == b
+    a.should_not == c
+    b.should_not == c
+    c.should == d
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:reloptions=>{nil=>"{fillfactor=90}"}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:reloptions=>{nil=>"{fillfactor=70}"}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:reloptions=>{"{fillfactor=90}"=>"{fillfactor=70}"}}}}}}
   end
 end

@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe PGExaminer do
   it "should consider indexes when determining equivalency" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         id integer
       );
@@ -10,7 +10,7 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(id);
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         id integer
       );
@@ -18,7 +18,7 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(id);
     SQL
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TABLE test_table (
         id integer
       );
@@ -26,13 +26,16 @@ describe PGExaminer do
       CREATE INDEX int_idx2 ON test_table(id);
     SQL
 
-    one.should == two
-    one.should_not == three
-    two.should_not == three
+    a.should == b
+    a.should_not == c
+    b.should_not == c
+
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{:added=>["int_idx2"], :removed=>["int_idx"]}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{:added=>["int_idx2"], :removed=>["int_idx"]}}}}}}
   end
 
   it "should consider the columns indexes are on when determining equivalency" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
         b integer
@@ -41,7 +44,7 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(a);
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
         b integer
@@ -50,7 +53,7 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(b);
     SQL
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
         b integer
@@ -59,13 +62,17 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(a, b);
     SQL
 
-    one.should_not == two
-    one.should_not == three
-    two.should_not == three
+    a.should_not == b
+    a.should_not == c
+    b.should_not == c
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:expression=>{["a"]=>["b"]}}}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:expression=>{["a"]=>["a", "b"]}}}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:expression=>{["b"]=>["a", "b"]}}}}}}}}
   end
 
   it "should consider the filters indexes have when determining equivalency" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
@@ -73,9 +80,9 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(a) WHERE a > 0;
     SQL
 
-    one.schemas.first.tables.first.indexes.first.row['filter'].should == '(a > 0)'
+    a.schemas.first.tables.first.indexes.first.row['filter'].should == '(a > 0)'
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
@@ -83,9 +90,9 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(a) WHERE a > 0;
     SQL
 
-    two.schemas.first.tables.first.indexes.first.row['filter'].should == '(a > 0)'
+    b.schemas.first.tables.first.indexes.first.row['filter'].should == '(a > 0)'
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
@@ -93,13 +100,16 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(a);
     SQL
 
-    one.should == two
-    one.should_not == three
-    two.should_not == three
+    a.should == b
+    a.should_not == c
+    b.should_not == c
+
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:filter=>{"(a > 0)"=>nil}}}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:filter=>{"(a > 0)"=>nil}}}}}}}}
   end
 
   it "should consider the expressions indexes are on, if any" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a text
       );
@@ -107,9 +117,9 @@ describe PGExaminer do
       CREATE INDEX text_idx ON test_table(lower(a));
     SQL
 
-    one.schemas.first.tables.first.indexes.first.expression.should == 'lower(a)'
+    a.schemas.first.tables.first.indexes.first.expression.should == 'lower(a)'
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a text
       );
@@ -117,9 +127,9 @@ describe PGExaminer do
       CREATE INDEX text_idx ON test_table(LOWER(a));
     SQL
 
-    two.schemas.first.tables.first.indexes.first.expression.should == 'lower(a)'
+    b.schemas.first.tables.first.indexes.first.expression.should == 'lower(a)'
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TABLE test_table (
         a text
       );
@@ -127,13 +137,16 @@ describe PGExaminer do
       CREATE INDEX text_idx ON test_table(a);
     SQL
 
-    one.should == two
-    one.should_not == three
-    two.should_not == three
+    a.should == b
+    a.should_not == c
+    b.should_not == c
+
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"text_idx"=>{:expression=>{"lower(a)"=>["a"]}}}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"text_idx"=>{:expression=>{"lower(a)"=>["a"]}}}}}}}}
   end
 
   it "should consider the uniqueness and primary key status of an index, if any" do
-    one = examine <<-SQL
+    a = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
@@ -141,7 +154,7 @@ describe PGExaminer do
       CREATE INDEX int_idx ON test_table(a);
     SQL
 
-    two = examine <<-SQL
+    b = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
@@ -149,7 +162,7 @@ describe PGExaminer do
       CREATE UNIQUE INDEX int_idx ON test_table(a);
     SQL
 
-    three = examine <<-SQL
+    c = examine <<-SQL
       CREATE TABLE test_table (
         a integer
       );
@@ -157,8 +170,12 @@ describe PGExaminer do
       ALTER TABLE test_table ADD PRIMARY KEY (a);
     SQL
 
-    one.should_not == two
-    one.should_not == three
-    two.should_not == three
+    a.should_not == b
+    a.should_not == c
+    b.should_not == c
+
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:indisunique=>{"f"=>"t"}}}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:attnotnull=>{"f"=>"t"}}}, :indexes=>{:added=>["test_table_pkey"], :removed=>["int_idx"]}, :constraints=>{:added=>["test_table_pkey"]}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:attnotnull=>{"f"=>"t"}}}, :indexes=>{:added=>["test_table_pkey"], :removed=>["int_idx"]}, :constraints=>{:added=>["test_table_pkey"]}}}}}}
   end
 end

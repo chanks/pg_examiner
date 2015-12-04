@@ -43,7 +43,11 @@ module PGExaminer
 
         if these_names == those_names
           result = these.zip(those).inject({}) do |memo, (this, that)|
-            memo.merge(this.diff(that))
+            if (result = this.diff(that)).any?
+              memo.merge(this.name => result)
+            else
+              memo
+            end
           end
 
           if result.any?
