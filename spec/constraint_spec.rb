@@ -163,5 +163,30 @@ describe PGExaminer do
     a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{"con"=>{:definition=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
   end
 
-  it "should consider the tables each constraint is on"
+  it "should consider the tables each constraint is on" do
+    a = examine <<-SQL
+      CREATE TABLE test_table_1 (
+        a integer,
+        CONSTRAINT con CHECK (a > 0)
+      );
+
+      CREATE TABLE test_table_2 (
+        a integer
+      );
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table_1 (
+        a integer
+      );
+
+      CREATE TABLE test_table_2 (
+        a integer,
+        CONSTRAINT con CHECK (a > 0)
+      );
+    SQL
+
+    a.should_not == b
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table_1"=>{:constraints=>{:removed=>["con"]}}, "test_table_2"=>{:constraints=>{:added=>["con"]}}}}}}
+  end
 end
