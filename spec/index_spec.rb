@@ -217,4 +217,83 @@ describe PGExaminer do
 
     a.diff(d).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{:removed=>["test_table_a_key"]}}}}}}
   end
+
+  it "should recognize the difference between unique indices with different deferrable states" do
+    pending "Special logic for deferrable indices"
+
+    a = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a);
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a) NOT DEFERRABLE;
+    SQL
+
+    c = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a) DEFERRABLE;
+    SQL
+
+    d = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a) DEFERRABLE INITIALLY IMMEDIATE;
+    SQL
+
+    e = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a) DEFERRABLE INITIALLY DEFERRED;
+    SQL
+
+    c2 = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a) DEFERRABLE;
+    SQL
+
+    d2 = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a) DEFERRABLE INITIALLY IMMEDIATE;
+    SQL
+
+    e2 = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a) DEFERRABLE INITIALLY DEFERRED;
+    SQL
+
+    a.should     == b
+    a.should_not == c
+    a.should_not == d
+    c.should     == d
+    c.should_not == e
+    d.should_not == e
+
+    c.should == c2
+    d.should == d2
+    e.should == e2
+  end
 end
