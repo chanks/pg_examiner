@@ -6,12 +6,14 @@ module PGExaminer
       def diffable_attrs
         {
           "name"       => "name",
-          "extversion" => "extension version"
+          "extversion" => "extension version",
         }
       end
 
       def diffable_methods
-        [:schema_name]
+        {
+          "schema_name" => "schema name"
+        }
       end
 
       def schema

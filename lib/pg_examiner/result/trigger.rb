@@ -11,7 +11,9 @@ module PGExaminer
       end
 
       def diffable_methods
-        [:function]
+        {
+          "function" => "function"
+        }
       end
 
       def function

@@ -4,7 +4,10 @@ module PGExaminer
   class Result
     class Schema < Item
       def diffable_lists
-        [:tables, :functions]
+        {
+          "tables"    => "tables",
+          "functions" => "functions"
+        }
       end
 
       def tables

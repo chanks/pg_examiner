@@ -4,7 +4,12 @@ module PGExaminer
   class Result
     class Table < Item
       def diffable_lists
-        [:columns, :indexes, :constraints, :triggers]
+        {
+          "columns"     => "columns",
+          "indexes"     => "indexes",
+          "constraints" => "constraints",
+          "triggers"    => "triggers",
+        }
       end
 
       def diffable_attrs

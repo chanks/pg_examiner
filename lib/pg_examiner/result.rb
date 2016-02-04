@@ -22,7 +22,11 @@ module PGExaminer
     end
 
     def diffable_lists
-      [:schemas, :extensions, :languages]
+      {
+        "schemas"    => "schemas",
+        "extensions" => "extensions",
+        "languages"  => "languages",
+      }
     end
 
     def schemas

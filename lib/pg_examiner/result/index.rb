@@ -13,7 +13,9 @@ module PGExaminer
       end
 
       def diffable_methods
-        [:expression]
+        {
+          "expression" => "expression"
+        }
       end
 
       def expression

@@ -4,7 +4,10 @@ module PGExaminer
   class Result
     class Column < Item
       def diffable_methods
-        [:type, :default]
+        {
+          "type"    => "type",
+          "default" => "default"
+        }
       end
 
       def diffable_attrs

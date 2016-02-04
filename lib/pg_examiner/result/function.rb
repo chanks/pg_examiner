@@ -12,7 +12,11 @@ module PGExaminer
       end
 
       def diffable_methods
-        [:argument_types, :return_type, :language]
+        {
+          "argument_types" => "argument types",
+          "return_type"    => "return type",
+          "language"       => "language",
+        }
       end
 
       def argument_types

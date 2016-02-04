@@ -2,11 +2,11 @@
 
 module PGExaminer
   class Base
-    def diffable_lists
-      []
+    def diffable_attrs
+      {}
     end
 
-    def diffable_attrs
+    def diffable_lists
       []
     end
 
@@ -28,16 +28,16 @@ module PGExaminer
         end
       end
 
-      diffable_methods.each do |attr|
+      diffable_methods.each do |attr, description|
         this = send(attr)
         that = other.send(attr)
 
         unless this == that
-          r[attr.to_s] = {this => that}
+          r[description] = {this => that}
         end
       end
 
-      diffable_lists.each do |attr|
+      diffable_lists.each do |attr, description|
         these = send(attr)
         those = other.send(attr)
         these_names = these.map(&:name)
@@ -51,7 +51,7 @@ module PGExaminer
           end
 
           if result.any?
-            r[attr.to_s] = result
+            r[description] = result
           end
         else
           added   = those_names - these_names
@@ -60,7 +60,7 @@ module PGExaminer
           h = {}
           h['added']   = added   if added.any?
           h['removed'] = removed if removed.any?
-          r[attr.to_s] = h
+          r[description] = h
         end
       end
 
