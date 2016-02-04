@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module PGExaminer
   class Result
     class Extension < Item

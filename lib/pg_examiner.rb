@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pg_examiner/result'
 require 'pg_examiner/version'
 
