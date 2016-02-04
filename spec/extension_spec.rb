@@ -25,7 +25,7 @@ describe PGExaminer do
     plpgsql.name.should == 'plpgsql'
     plpgsql.schema.should be nil
 
-    result1.diff(result2)[:extensions].should == {added: ['citext']}
-    result2.diff(result1)[:extensions].should == {removed: ['citext']}
+    result1.diff(result2)["extensions"].should == {"added"   => ['citext']}
+    result2.diff(result1)["extensions"].should == {"removed" => ['citext']}
   end
 end

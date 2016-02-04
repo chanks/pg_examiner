@@ -87,7 +87,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{:added=>["test_table_b"], :removed=>["test_table_a"]}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"added"=>["test_table_b"], "removed"=>["test_table_a"]}}}}
   end
 
   it "should consider tables with current columns in the same order equivalent" do
@@ -140,7 +140,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{}}}}}}
   end
 
   it "should consider tables with columns of differing types not equivalent" do
@@ -165,8 +165,8 @@ describe PGExaminer do
     a.should_not == b
     a.should_not == c
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:type=>{"int4"=>"text"}}}}}}}}
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:default=>{nil=>"5"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"type"=>{"int4"=>"text"}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"default"=>{nil=>"5"}}}}}}}}
   end
 
   it "should consider array types as different from scalar types" do
@@ -184,7 +184,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{"array dimensionality"=>{"0"=>"1"}, :type=>{"int4"=>"_int4"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"array dimensionality"=>{"0"=>"1"}, "type"=>{"int4"=>"_int4"}}}}}}}}
   end
 
   it "should consider the presence of not-null constraints" do
@@ -202,7 +202,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{"column is marked not-null"=>{"f"=>"t"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"column is marked not-null"=>{"f"=>"t"}}}}}}}}
   end
 
   it "should consider the presence of type-specific data" do
@@ -220,7 +220,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{"datatype information (atttypmod)"=>{"53"=>"54"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"datatype information (atttypmod)"=>{"53"=>"54"}}}}}}}}
   end
 
   it "should consider unlogged and temporary tables as different from permanent tables" do
@@ -246,9 +246,9 @@ describe PGExaminer do
     a.should_not == c
     b.should_not == c
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{"table type (relpersistence)"=>{"p"=>"u"}}}}}}
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{:removed=>["test_table"]}}}}
-    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{:removed=>["test_table"]}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"table type (relpersistence)"=>{"p"=>"u"}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"removed"=>["test_table"]}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"removed"=>["test_table"]}}}}
   end
 
   it "should consider additional specified options when comparing tables" do
@@ -284,8 +284,8 @@ describe PGExaminer do
     b.should_not == c
     c.should == d
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{"table options"=>{nil=>"{fillfactor=90}"}}}}}}
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{"table options"=>{nil=>"{fillfactor=70}"}}}}}}
-    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{"table options"=>{"{fillfactor=90}"=>"{fillfactor=70}"}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"table options"=>{nil=>"{fillfactor=90}"}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"table options"=>{nil=>"{fillfactor=70}"}}}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"table options"=>{"{fillfactor=90}"=>"{fillfactor=70}"}}}}}}
   end
 end

@@ -32,8 +32,8 @@ describe PGExaminer do
     a.should_not == c
     b.should_not == c
 
-    a.diff(c).should == {:schemas=>{"public"=>{:functions=>{:added=>["add_numbers"], :removed=>["add"]}}}}
-    b.diff(c).should == {:schemas=>{"public"=>{:functions=>{:added=>["add_numbers"], :removed=>["add"]}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"functions"=>{"added"=>["add_numbers"], "removed"=>["add"]}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"functions"=>{"added"=>["add_numbers"], "removed"=>["add"]}}}}
   end
 
   it "should be able to differentiate between functions by their argument types" do
@@ -76,8 +76,8 @@ describe PGExaminer do
     b.should_not == d
     c.should_not == d
 
-    a.diff(b).should == {:schemas=>{"public"=>{:functions=>{"add"=>{"function definition"=>{"CREATE OR REPLACE FUNCTION public.add(one integer, two integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"=>"CREATE OR REPLACE FUNCTION public.add(one integer, two integer, three integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"}, :argument_types=>{["int4", "int4"]=>["int4", "int4", "int4"]}}}}}}
-    a.diff(c).should == {:schemas=>{"public"=>{:functions=>{"add"=>{"function definition"=>{"CREATE OR REPLACE FUNCTION public.add(one integer, two integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"=>"CREATE OR REPLACE FUNCTION public.add(one integer, two integer, three integer[])\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"}, :argument_types=>{["int4", "int4"]=>["int4", "int4", "_int4"]}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"functions"=>{"add"=>{"function definition"=>{"CREATE OR REPLACE FUNCTION public.add(one integer, two integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"=>"CREATE OR REPLACE FUNCTION public.add(one integer, two integer, three integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"}, "argument_types"=>{["int4", "int4"]=>["int4", "int4", "int4"]}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"functions"=>{"add"=>{"function definition"=>{"CREATE OR REPLACE FUNCTION public.add(one integer, two integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"=>"CREATE OR REPLACE FUNCTION public.add(one integer, two integer, three integer[])\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"}, "argument_types"=>{["int4", "int4"]=>["int4", "int4", "_int4"]}}}}}}
   end
 
   it "should be able to differentiate between functions by their argument defaults" do
@@ -151,7 +151,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b)[:schemas]['public'][:functions]['add'][:language].should == {'sql' => 'plpgsql'}
+    a.diff(b)["schemas"]['public']["functions"]['add']["language"].should == {'sql' => 'plpgsql'}
   end
 
   it "should be able to differentiate between functions by their other flags" do
@@ -309,8 +309,8 @@ describe PGExaminer do
     a.should_not == c
     b.should_not == c
 
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:triggers=>{:added=>["trig2"], :removed=>["trig"]}}}}}}
-    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:triggers=>{:added=>["trig2"], :removed=>["trig"]}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"added"=>["trig2"], "removed"=>["trig"]}}}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"added"=>["trig2"], "removed"=>["trig"]}}}}}}
   end
 
   it "should be able to differentiate between triggers by their parent tables" do
@@ -356,7 +356,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table_a"=>{:triggers=>{:removed=>["trig"]}}, "test_table_b"=>{:triggers=>{:added=>["trig"]}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table_a"=>{"triggers"=>{"removed"=>["trig"]}}, "test_table_b"=>{"triggers"=>{"added"=>["trig"]}}}}}}
   end
 
   it "should be able to differentiate between triggers by their associated functions" do
@@ -410,7 +410,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:triggers=>{"trig"=>{:function=>{"func1"=>"func2"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"trig"=>{"function"=>{"func1"=>"func2"}}}}}}}}
   end
 
   it "should be able to differentiate between triggers by their firing conditions" do
@@ -466,6 +466,6 @@ describe PGExaminer do
     a.should_not == c
     b.should_not == c
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:triggers=>{"trig"=>{"trigger firing conditions (tgtype)"=>{"7"=>"19"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"trig"=>{"trigger firing conditions (tgtype)"=>{"7"=>"19"}}}}}}}}
   end
 end

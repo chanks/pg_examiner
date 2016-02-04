@@ -51,18 +51,18 @@ describe PGExaminer do
     c.should == c
 
     a.diff(a).should == {}
-    a.diff(b).should == {schemas: {added: ['test_schema_b'], removed: ['test_schema_a']}}
-    a.diff(c).should == {schemas: {removed: ['test_schema_a']}}
-    b.diff(a).should == {schemas: {added: ['test_schema_a'], removed: ['test_schema_b']}}
+    a.diff(b).should == {"schemas" => {"added" => ['test_schema_b'], "removed" => ['test_schema_a']}}
+    a.diff(c).should == {"schemas" => {"removed" => ['test_schema_a']}}
+    b.diff(a).should == {"schemas" => {"added" => ['test_schema_a'], "removed" => ['test_schema_b']}}
     b.diff(b).should == {}
-    b.diff(c).should == {schemas: {removed: ['test_schema_b']}}
-    c.diff(a).should == {schemas: {added: ['test_schema_a']}}
-    c.diff(b).should == {schemas: {added: ['test_schema_b']}}
+    b.diff(c).should == {"schemas" => {"removed" => ['test_schema_b']}}
+    c.diff(a).should == {"schemas" => {"added" => ['test_schema_a']}}
+    c.diff(b).should == {"schemas" => {"added" => ['test_schema_b']}}
     c.diff(c).should == {}
   end
 
   it "should be able to compare the contents of different schemas" do
-    a = examine <<-SQL, :schema1
+    a = examine <<-SQL, "schema1"
       CREATE SCHEMA schema1;
       CREATE TABLE schema1.test_table (
         a integer,
@@ -70,7 +70,7 @@ describe PGExaminer do
       );
     SQL
 
-    b = examine <<-SQL, :schema2
+    b = examine <<-SQL, "schema2"
       CREATE SCHEMA schema2;
       CREATE TABLE schema2.test_table (
         a integer,
@@ -78,7 +78,7 @@ describe PGExaminer do
       );
     SQL
 
-    c = examine <<-SQL, :schema2
+    c = examine <<-SQL, "schema2"
       CREATE SCHEMA schema2;
       CREATE TABLE schema2.test_table_2 (
         a integer,
@@ -86,7 +86,7 @@ describe PGExaminer do
       );
     SQL
 
-    d = examine <<-SQL, :schema2
+    d = examine <<-SQL, "schema2"
       CREATE SCHEMA schema2;
     SQL
 
@@ -95,7 +95,7 @@ describe PGExaminer do
     b.diff(a).should == {}
 
     a.should_not == c
-    a.diff(c).should == {tables: {added: ['test_table_2'], removed: ['test_table']}}
-    a.diff(d).should == {tables: {removed: ['test_table']}}
+    a.diff(c).should == {"tables" => {"added" => ['test_table_2'], "removed" => ['test_table']}}
+    a.diff(d).should == {"tables" => {"removed" => ['test_table']}}
   end
 end

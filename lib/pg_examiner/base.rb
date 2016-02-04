@@ -33,7 +33,7 @@ module PGExaminer
         that = other.send(attr)
 
         unless this == that
-          r[attr] = {this => that}
+          r[attr.to_s] = {this => that}
         end
       end
 
@@ -51,16 +51,16 @@ module PGExaminer
           end
 
           if result.any?
-            r[attr] = result
+            r[attr.to_s] = result
           end
         else
           added   = those_names - these_names
           removed = these_names - those_names
 
           h = {}
-          h[:added]   = added   if added.any?
-          h[:removed] = removed if removed.any?
-          r[attr] = h
+          h['added']   = added   if added.any?
+          h['removed'] = removed if removed.any?
+          r[attr.to_s] = h
         end
       end
 

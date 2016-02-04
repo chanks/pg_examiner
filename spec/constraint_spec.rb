@@ -53,10 +53,10 @@ describe PGExaminer do
     a.should_not == f
     e.should_not == f
 
-    a.diff(d).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{:added=>["con_two"], :removed=>["con"]}}}}}}
-    a.diff(e).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{:added=>["test_table_a_check"], :removed=>["con"]}}}}}}
-    a.diff(f).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{:removed=>["con"]}}}}}}
-    e.diff(f).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{:removed=>["test_table_a_check"]}}}}}}
+    a.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"added"=>["con_two"], "removed"=>["con"]}}}}}}
+    a.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"added"=>["test_table_a_check"], "removed"=>["con"]}}}}}}
+    a.diff(f).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"removed"=>["con"]}}}}}}
+    e.diff(f).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"removed"=>["test_table_a_check"]}}}}}}
   end
 
   it "should consider foreign keys when differentiating between schemas" do
@@ -126,11 +126,11 @@ describe PGExaminer do
     b.should_not == e
     d.should_not == e
 
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
-    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
-    b.diff(d).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"}}}}}}}}
-    b.diff(e).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
-    d.diff(e).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
+    b.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"}}}}}}}}
+    b.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
+    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
   end
 
   it "should consider constraints when determining table equivalency" do
@@ -161,8 +161,8 @@ describe PGExaminer do
     a.should_not == c
     b.should == c
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{"con"=>{"constraint definition"=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{"con"=>{"constraint definition"=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"con"=>{"constraint definition"=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"con"=>{"constraint definition"=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
   end
 
   it "should consider the tables each constraint is on" do
@@ -189,6 +189,6 @@ describe PGExaminer do
     SQL
 
     a.should_not == b
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table_1"=>{:constraints=>{:removed=>["con"]}}, "test_table_2"=>{:constraints=>{:added=>["con"]}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table_1"=>{"constraints"=>{"removed"=>["con"]}}, "test_table_2"=>{"constraints"=>{"added"=>["con"]}}}}}}
   end
 end
