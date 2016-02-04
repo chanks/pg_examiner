@@ -4,7 +4,11 @@ module PGExaminer
   class Result
     class Function < Item
       def diffable_attrs
-        [:name, :proargmodes, :definition]
+        {
+          "name"        => "name",
+          "proargmodes" => "argument modes",
+          "definition"  => "function definition",
+        }
       end
 
       def diffable_methods

@@ -8,7 +8,11 @@ module PGExaminer
       end
 
       def diffable_attrs
-        [:name, :relpersistence, :reloptions]
+        {
+          "name"           => "name",
+          "relpersistence" => "table type (relpersistence)",
+          "reloptions"     => "table options",
+        }
       end
 
       def columns

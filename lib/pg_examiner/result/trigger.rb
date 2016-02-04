@@ -4,7 +4,10 @@ module PGExaminer
   class Result
     class Trigger < Item
       def diffable_attrs
-        [:name, :tgtype]
+        {
+          "name"   => "name",
+          "tgtype" => "trigger firing conditions (tgtype)",
+        }
       end
 
       def diffable_methods

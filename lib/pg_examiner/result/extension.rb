@@ -4,7 +4,10 @@ module PGExaminer
   class Result
     class Extension < Item
       def diffable_attrs
-        [:name, :extversion]
+        {
+          "name"       => "name",
+          "extversion" => "extension version"
+        }
       end
 
       def diffable_methods

@@ -8,7 +8,12 @@ module PGExaminer
       end
 
       def diffable_attrs
-        [:name, :attndims, :attnotnull, :atttypmod]
+        {
+          'name'       => "name",
+          'attndims'   => "array dimensionality",
+          'attnotnull' => "column is marked not-null",
+          'atttypmod'  => "datatype information (atttypmod)",
+        }
       end
 
       def type

@@ -106,8 +106,8 @@ describe PGExaminer do
     a.should_not == c
     b.should_not == c
 
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:filter=>{"(a > 0)"=>nil}}}}}}}}
-    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:filter=>{"(a > 0)"=>nil}}}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{"filter expression"=>{"(a > 0)"=>nil}}}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{"filter expression"=>{"(a > 0)"=>nil}}}}}}}}
   end
 
   it "should consider the expressions indexes are on, if any" do
@@ -176,9 +176,9 @@ describe PGExaminer do
     a.should_not == c
     b.should_not == c
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{:indisunique=>{"f"=>"t"}}}}}}}}
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:attnotnull=>{"f"=>"t"}}}, :indexes=>{:added=>["test_table_pkey"], :removed=>["int_idx"]}, :constraints=>{:added=>["test_table_pkey"]}}}}}}
-    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:attnotnull=>{"f"=>"t"}}}, :indexes=>{:added=>["test_table_pkey"], :removed=>["int_idx"]}, :constraints=>{:added=>["test_table_pkey"]}}}}}}
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:indexes=>{"int_idx"=>{"index is unique"=>{"f"=>"t"}}}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{"column is marked not-null"=>{"f"=>"t"}}}, :indexes=>{:added=>["test_table_pkey"], :removed=>["int_idx"]}, :constraints=>{:added=>["test_table_pkey"]}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{"column is marked not-null"=>{"f"=>"t"}}}, :indexes=>{:added=>["test_table_pkey"], :removed=>["int_idx"]}, :constraints=>{:added=>["test_table_pkey"]}}}}}}
   end
 
   it "should recognize the difference between a unique index and a unique constraint" do

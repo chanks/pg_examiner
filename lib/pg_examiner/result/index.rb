@@ -4,7 +4,12 @@ module PGExaminer
   class Result
     class Index < Item
       def diffable_attrs
-        [:name, :filter, :indisunique, :indisprimary]
+        {
+          "name"         => "name",
+          "filter"       => "filter expression",
+          "indisunique"  => "index is unique",
+          "indisprimary" => "index is primary key",
+        }
       end
 
       def diffable_methods

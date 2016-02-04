@@ -126,11 +126,11 @@ describe PGExaminer do
     b.should_not == e
     d.should_not == e
 
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{:definition=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
-    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{:definition=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
-    b.diff(d).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{:definition=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"}}}}}}}}
-    b.diff(e).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{:definition=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
-    d.diff(e).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{:definition=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
+    b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
+    b.diff(d).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"}}}}}}}}
+    b.diff(e).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
+    d.diff(e).should == {:schemas=>{"public"=>{:tables=>{"child"=>{:constraints=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
   end
 
   it "should consider constraints when determining table equivalency" do
@@ -161,8 +161,8 @@ describe PGExaminer do
     a.should_not == c
     b.should == c
 
-    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{"con"=>{:definition=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
-    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{"con"=>{:definition=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
+    a.diff(b).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{"con"=>{"constraint definition"=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
+    a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{"con"=>{"constraint definition"=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
   end
 
   it "should consider the tables each constraint is on" do

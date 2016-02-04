@@ -19,12 +19,12 @@ module PGExaminer
 
       r = {}
 
-      diffable_attrs.each do |attr|
-        this = @row.fetch(attr.to_s)
-        that = other.row.fetch(attr.to_s)
+      diffable_attrs.each do |attr, description|
+        this = @row.fetch(attr)
+        that = other.row.fetch(attr)
 
         unless this == that
-          r[attr] = {this => that}
+          r[description] = {this => that}
         end
       end
 
