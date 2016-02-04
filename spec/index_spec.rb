@@ -180,4 +180,41 @@ describe PGExaminer do
     a.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:attnotnull=>{"f"=>"t"}}}, :indexes=>{:added=>["test_table_pkey"], :removed=>["int_idx"]}, :constraints=>{:added=>["test_table_pkey"]}}}}}}
     b.diff(c).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:columns=>{"a"=>{:attnotnull=>{"f"=>"t"}}}, :indexes=>{:added=>["test_table_pkey"], :removed=>["int_idx"]}, :constraints=>{:added=>["test_table_pkey"]}}}}}}
   end
+
+  it "should recognize the difference between a unique index and a unique constraint" do
+    a = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        UNIQUE (a)
+      );
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer UNIQUE
+      );
+    SQL
+
+    c = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      ALTER TABLE test_table ADD CONSTRAINT test_table_a_key UNIQUE (a);
+    SQL
+
+    d = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE UNIQUE INDEX test_table_a_key ON test_table (a);
+    SQL
+
+    a.should == b
+    a.should == c
+    a.should_not == d
+
+    a.diff(d).should == {:schemas=>{"public"=>{:tables=>{"test_table"=>{:constraints=>{:removed=>["test_table_a_key"]}}}}}}
+  end
 end
