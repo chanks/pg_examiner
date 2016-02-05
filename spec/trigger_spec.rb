@@ -215,4 +215,96 @@ describe PGExaminer do
 
     a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"trig"=>{"trigger firing conditions (tgtype)"=>{"7"=>"19"}}}}}}}}
   end
+
+  it "should be able to differentiate between normal triggers and constraint triggers" do
+    a = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE TRIGGER trig AFTER INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE CONSTRAINT TRIGGER trig AFTER INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    a.should_not == b
+
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"added"=>["trig"]}}}}}}
+  end
+
+  it "should be able to differentiate between deferrable and non-deferrable constraint triggers" do
+    a = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE CONSTRAINT TRIGGER trig AFTER INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE CONSTRAINT TRIGGER trig AFTER INSERT ON test_table DEFERRABLE FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    c = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer
+      );
+
+      CREATE FUNCTION func() RETURNS trigger AS $$
+        BEGIN
+          NEW.a = 56;
+          RETURN NEW;
+        END;
+      $$
+      LANGUAGE plpgsql;
+
+      CREATE CONSTRAINT TRIGGER trig AFTER INSERT ON test_table DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE func();
+    SQL
+
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint definition"=>{"TRIGGER"=>"TRIGGER DEFERRABLE"}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint definition"=>{"TRIGGER"=>"TRIGGER DEFERRABLE INITIALLY DEFERRED"}}}}}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint definition"=>{"TRIGGER DEFERRABLE"=>"TRIGGER DEFERRABLE INITIALLY DEFERRED"}}}}}}}}
+  end
 end
