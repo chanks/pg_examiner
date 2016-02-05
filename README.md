@@ -6,18 +6,17 @@ PGExaminer tries to be sensible about equivalency. For example, it will understa
 
 PGExaminer is NOT exhaustive. It currently doesn't have tests for its understanding of:
 
-1. Aggregate functions
-2. Column TOAST settings
-3. Sequences
-4. Views
-5. User-defined types or enums
-6. Object COMMENTs
-7. Materialized views
-8. Constraint deferral states
-9. Exclusion constraints
-10. Inheritance structures
-11. User-defined objects in the system (pg_*) schemas or information_schema.
-12. ...Probably some other stuff.
+* Aggregate functions.
+* Column TOAST settings.
+* Sequences.
+* Views.
+* User-defined types or enums.
+* Object COMMENTs.
+* Materialized views.
+* Exclusion constraints.
+* Inheritance structures.
+* User-defined objects in the system (pg_*) schemas or information_schema.
+* ...Probably some other stuff.
 
 It may or may not understand these objects. If you're using one of these, or another Postgres feature that may be considered obscure, please test it out first. I'll be happy to add support for more objects if there's demand.
 
