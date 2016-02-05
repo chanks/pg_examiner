@@ -87,7 +87,7 @@ describe PGExaminer do
 
     a.should_not == b
 
-    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"added"=>["test_table_b"], "removed"=>["test_table_a"]}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"added"=>["test_table_b"], "removed"=>["test_table_a"]}, "sequences"=>{"added"=>["test_table_b_id_seq"], "removed"=>["test_table_a_id_seq"]}}}}
   end
 
   it "should consider tables with current columns in the same order equivalent" do

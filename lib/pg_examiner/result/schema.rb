@@ -6,7 +6,8 @@ module PGExaminer
       def diffable_lists
         {
           "tables"    => "tables",
-          "functions" => "functions"
+          "sequences" => "sequences",
+          "functions" => "functions",
         }
       end
 
@@ -14,6 +15,12 @@ module PGExaminer
         @tables ||= result.pg_class.select do |c|
           c['relnamespace'] == oid && c['relkind'] == 'r'
         end.map{|row| Table.new(result, row, self)}.sort_by(&:name)
+      end
+
+      def sequences
+        @sequences ||= result.pg_class.select do |c|
+          c['relnamespace'] == oid && c['relkind'] == 'S'
+        end.map{|row| Sequence.new(result, row, self)}.sort_by(&:name)
       end
 
       def functions
