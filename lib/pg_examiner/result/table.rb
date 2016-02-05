@@ -23,7 +23,7 @@ module PGExaminer
       def columns
         @columns ||= result.pg_attribute.select do |c|
           c['attrelid'] == oid
-        end.sort_by{|c| c['attnum'].to_i}.map { |row| Column.new(result, row, self) }
+        end.sort_by{|c| c['name']}.map { |row| Column.new(result, row, self) }
       end
 
       def indexes

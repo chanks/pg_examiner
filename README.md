@@ -2,7 +2,7 @@
 
 A tool for comparing PG database structures. Use it to ensure that downward migrations precisely undo upward ones, or that different sets of migrations produce the same schema, or that different schemas in a multitenanted database all have the same structure.
 
-PGExaminer tries to be sensible about equivalency. For example, it will understand that two tables are equivalent if they have the same name, column names, column types, triggers, constraints, and indices. It won't care about the contents of the tables. It will care about the order the columns are in, but will ignore columns that have been dropped.
+PGExaminer tries to be sensible about equivalency. For example, it will understand that two tables are equivalent if they have the same name, column names/types, triggers, constraints, and indices. It won't care about the contents of the tables, or the order in which the columns were declared.
 
 PGExaminer is NOT exhaustive. It currently doesn't have tests for its understanding of:
 

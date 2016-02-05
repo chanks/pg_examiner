@@ -23,7 +23,7 @@ describe PGExaminer do
     table.should be_an_instance_of PGExaminer::Result::Table
     table.columns.length.should == 2
 
-    id, body = table.columns # Returned in proper ordering
+    body, id = table.columns # Returned in alphabetical ordering
 
     id.should be_an_instance_of PGExaminer::Result::Column
     id.name.should == 'id'
@@ -138,9 +138,7 @@ describe PGExaminer do
       )
     SQL
 
-    a.should_not == b
-
-    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{}}}}}}
+    a.should == b
   end
 
   it "should consider tables with columns of differing types not equivalent" do
