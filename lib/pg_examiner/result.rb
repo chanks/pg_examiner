@@ -102,7 +102,7 @@ module PGExaminer
         SELECT oid, tgname AS name, tgrelid, tgtype, tgfoid
         FROM pg_trigger
         WHERE tgrelid IN (?)
-        AND tgconstrrelid = '0' -- Ignore foreign key triggers, which have unpredictable names.
+        AND NOT tgisinternal -- Ignore foreign key and unique index triggers, which have unpredictable names.
       SQL
 
       @pg_attrdef = execute <<-SQL

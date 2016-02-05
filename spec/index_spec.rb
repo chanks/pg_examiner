@@ -219,8 +219,6 @@ describe PGExaminer do
   end
 
   it "should recognize the difference between unique indices with different deferrable states" do
-    pending "Special logic for deferrable indices"
-
     a = examine <<-SQL
       CREATE TABLE test_table (
         a integer
@@ -295,5 +293,10 @@ describe PGExaminer do
     c.should == c2
     d.should == d2
     e.should == e2
+
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint definition"=>{"UNIQUE (a)"=>"UNIQUE (a) DEFERRABLE"}}}}}}}}
+    a.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint definition"=>{"UNIQUE (a)"=>"UNIQUE (a) DEFERRABLE"}}}}}}}}
+    c.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint definition"=>{"UNIQUE (a) DEFERRABLE"=>"UNIQUE (a) DEFERRABLE INITIALLY DEFERRED"}}}}}}}}
+    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint definition"=>{"UNIQUE (a) DEFERRABLE"=>"UNIQUE (a) DEFERRABLE INITIALLY DEFERRED"}}}}}}}}
   end
 end
