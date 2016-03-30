@@ -76,8 +76,8 @@ describe PGExaminer do
     b.should_not == d
     c.should_not == d
 
-    a.diff(b).should == {"schemas"=>{"public"=>{"functions"=>{"add"=>{"function definition"=>{"CREATE OR REPLACE FUNCTION public.add(one integer, two integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"=>"CREATE OR REPLACE FUNCTION public.add(one integer, two integer, three integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"}, "argument types"=>{["int4", "int4"]=>["int4", "int4", "int4"]}}}}}}
-    a.diff(c).should == {"schemas"=>{"public"=>{"functions"=>{"add"=>{"function definition"=>{"CREATE OR REPLACE FUNCTION public.add(one integer, two integer)\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"=>"CREATE OR REPLACE FUNCTION public.add(one integer, two integer, three integer[])\n RETURNS integer\n LANGUAGE sql\nAS $function$\n        SELECT one + two\n      $function$\n"}, "argument types"=>{["int4", "int4"]=>["int4", "int4", "_int4"]}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"functions"=>{"add"=>{"function definition"=>{"CREATE OR REPLACE FUNCTION public.add(one integer, two integer) RETURNS integer LANGUAGE sql AS $function$ SELECT one + two $function$"=>"CREATE OR REPLACE FUNCTION public.add(one integer, two integer, three integer) RETURNS integer LANGUAGE sql AS $function$ SELECT one + two $function$"}, "argument types"=>{["int4", "int4"]=>["int4", "int4", "int4"]}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"functions"=>{"add"=>{"function definition"=>{"CREATE OR REPLACE FUNCTION public.add(one integer, two integer) RETURNS integer LANGUAGE sql AS $function$ SELECT one + two $function$"=>"CREATE OR REPLACE FUNCTION public.add(one integer, two integer, three integer[]) RETURNS integer LANGUAGE sql AS $function$ SELECT one + two $function$"}, "argument types"=>{["int4", "int4"]=>["int4", "int4", "_int4"]}}}}}}
   end
 
   it "should be able to differentiate between functions by their argument defaults" do
@@ -254,5 +254,45 @@ describe PGExaminer do
     a.should == b
     a.should_not == c
     a.should_not == d
+  end
+
+  it "should ignore whitespace in function definitions" do
+    a = examine <<-SQL_FUNCTION
+      CREATE FUNCTION add(one integer, two integer) RETURNS integer
+      AS $$
+        SELECT one + two
+      $$
+      LANGUAGE SQL;
+    SQL_FUNCTION
+
+    b = examine <<-SQL_FUNCTION
+    CREATE FUNCTION add(one integer, two integer) RETURNS integer
+    AS $$
+      SELECT one + two
+    $$
+    LANGUAGE SQL;
+    SQL_FUNCTION
+
+    c = examine <<-SQL_FUNCTION
+  CREATE FUNCTION add(one integer, two integer) RETURNS integer
+  AS $$
+    SELECT one + two
+  $$
+  LANGUAGE SQL;
+    SQL_FUNCTION
+
+    d = examine <<-SQL_FUNCTION
+CREATE FUNCTION add(one integer, two integer) RETURNS integer
+AS $$
+  SELECT one + two
+
+
+$$
+LANGUAGE SQL;
+    SQL_FUNCTION
+
+    a.should == b
+    a.should == c
+    a.should == d
   end
 end

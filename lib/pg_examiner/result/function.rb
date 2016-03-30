@@ -3,11 +3,12 @@
 module PGExaminer
   class Result
     class Function < Item
+      EXCESS_WHITESPACE_REGEX = /\s+/.freeze
+
       def diffable_attrs
         {
           "name"        => "name",
           "proargmodes" => "argument modes",
-          "definition"  => "function definition",
         }
       end
 
@@ -16,7 +17,14 @@ module PGExaminer
           "argument_types" => "argument types",
           "return_type"    => "return type",
           "language"       => "language",
+          "definition"     => "function definition",
         }
+      end
+
+      def definition
+        s = @row['definition'].strip
+        s.gsub!(EXCESS_WHITESPACE_REGEX, ' ')
+        s
       end
 
       def argument_types
