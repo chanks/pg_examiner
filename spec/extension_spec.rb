@@ -6,13 +6,13 @@ describe PGExaminer do
   it "should be able to examine the extensions in the db" do
     result1 = examine "SELECT 1"
     result1.should be_an_instance_of PGExaminer::Result
-    result1.extensions.map(&:name).should == ['plpgsql']
+    result1.extensions.map(&:name).should == ['plpgsql', 'uuid-ossp']
 
     result2 = examine <<-SQL
       CREATE EXTENSION citext;
     SQL
 
-    result2.extensions.length.should == 2
+    result2.extensions.length.should == 3
 
     citext, plpgsql = result2.extensions # Ordered by name
 

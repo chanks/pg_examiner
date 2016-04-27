@@ -12,6 +12,9 @@ CONNECTION = PG::Connection.open :host     => uri.host,
                                  :port     => uri.port || 5432,
                                  :dbname   => uri.path[1..-1]
 
+CONNECTION.set_notice_receiver {|n| n}
+CONNECTION.async_exec('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+
 RSpec.configure do |config|
   config.expect_with(:rspec) { |c| c.syntax = [:expect, :should] }
 
