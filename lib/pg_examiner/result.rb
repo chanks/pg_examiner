@@ -106,7 +106,7 @@ module PGExaminer
       SQL
 
       @pg_attrdef = execute <<-SQL
-        SELECT oid, adrelid, pg_get_expr(adbin, adrelid) AS default
+        SELECT oid, adrelid, adnum, pg_get_expr(adbin, adrelid) AS default
         FROM pg_attrdef
       SQL
 

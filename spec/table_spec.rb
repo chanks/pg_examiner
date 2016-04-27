@@ -154,17 +154,36 @@ describe PGExaminer do
       )
     SQL
 
-    c = examine <<-SQL
+    a.should_not == b
+
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"type"=>{"int4"=>"text"}}}}}}}}
+  end
+
+  it "should consider tables with columns that have differing defaults not equivalent" do
+    a = examine <<-SQL
       CREATE TABLE test_table (
-        a integer default 5
+        a uuid default uuid_generate_v4(),
+        b timestamptz default now()
       );
     SQL
 
-    a.should_not == b
-    a.should_not == c
+    b = examine <<-SQL
+      CREATE TABLE test_table (
+        a uuid default uuid_generate_v4(),
+        b timestamptz default now()
+      );
+    SQL
 
-    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"type"=>{"int4"=>"text"}}}}}}}}
-    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"default"=>{nil=>"5"}}}}}}}}
+    c = examine <<-SQL
+      CREATE TABLE test_table (
+        a uuid,
+        b timestamptz default now()
+      );
+    SQL
+
+    a.should == b
+    a.should_not == c
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"columns"=>{"a"=>{"default"=>{"uuid_generate_v4()"=>nil}}}}}}}}
   end
 
   it "should consider array types as different from scalar types" do
