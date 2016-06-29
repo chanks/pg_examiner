@@ -84,7 +84,7 @@ module PGExaminer
 
       @pg_index = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
         SELECT c.relname AS name, i.indrelid, i.indkey, indisunique, indisprimary,
-          pg_get_expr(i.indpred, i.indexrelid) AS filter,
+          pg_get_expr(i.indpred, i.indrelid) AS filter,
           pg_get_expr(i.indexprs, i.indrelid) AS expression
         FROM pg_index i
         JOIN pg_class c ON c.oid = i.indexrelid

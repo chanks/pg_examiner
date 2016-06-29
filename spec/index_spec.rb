@@ -76,27 +76,30 @@ describe PGExaminer do
   it "should consider the filters indexes have when determining equivalency" do
     a = examine <<-SQL
       CREATE TABLE test_table (
-        a integer
+        a integer,
+        b integer
       );
 
-      CREATE INDEX int_idx ON test_table(a) WHERE a > 0;
+      CREATE INDEX int_idx ON test_table(a) WHERE b > 0;
     SQL
 
-    a.schemas.first.tables.first.indexes.first.row['filter'].should == '(a > 0)'
+    a.schemas.first.tables.first.indexes.first.row['filter'].should == '(b > 0)'
 
     b = examine <<-SQL
       CREATE TABLE test_table (
-        a integer
+        a integer,
+        b integer
       );
 
-      CREATE INDEX int_idx ON test_table(a) WHERE a > 0;
+      CREATE INDEX int_idx ON test_table(a) WHERE b > 0;
     SQL
 
-    b.schemas.first.tables.first.indexes.first.row['filter'].should == '(a > 0)'
+    b.schemas.first.tables.first.indexes.first.row['filter'].should == '(b > 0)'
 
     c = examine <<-SQL
       CREATE TABLE test_table (
-        a integer
+        a integer,
+        b integer
       );
 
       CREATE INDEX int_idx ON test_table(a);
@@ -106,8 +109,8 @@ describe PGExaminer do
     a.should_not == c
     b.should_not == c
 
-    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"indexes"=>{"int_idx"=>{"filter expression"=>{"(a > 0)"=>nil}}}}}}}}
-    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"indexes"=>{"int_idx"=>{"filter expression"=>{"(a > 0)"=>nil}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"indexes"=>{"int_idx"=>{"filter expression"=>{"(b > 0)"=>nil}}}}}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"indexes"=>{"int_idx"=>{"filter expression"=>{"(b > 0)"=>nil}}}}}}}}
   end
 
   it "should consider the expressions indexes are on, if any" do
