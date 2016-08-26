@@ -70,5 +70,14 @@ module PGExaminer
     def ==(other)
       self.class == other.class && diff(other) == {}
     end
+
+    private
+
+    ARRAY_REGEX = /\A\{(.*)\}\z/
+    def extract_array(value)
+      without_brackets = value[ARRAY_REGEX, 1]
+      raise "Invalid array value: #{value.inspect}" unless without_brackets
+      without_brackets.split(',')
+    end
   end
 end

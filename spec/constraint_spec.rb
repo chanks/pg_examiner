@@ -45,17 +45,21 @@ describe PGExaminer do
       );
     SQL
 
-    a.should == b
-    a.should == c
-    b.should == c
-    a.should_not == d
-    a.should_not == e
-    a.should_not == f
-    e.should_not == f
+    g = examine <<-SQL
+      CREATE TABLE test_table (
+        a integer,
+        CONSTRAINT con CHECK (a < 0)
+      );
+    SQL
+
+    a.diff(b).should be_empty
+    a.diff(c).should be_empty
+    b.diff(c).should be_empty
 
     a.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"added"=>["con_two"], "removed"=>["con"]}}}}}}
     a.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"added"=>["test_table_a_check"], "removed"=>["con"]}}}}}}
     a.diff(f).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"removed"=>["con"]}}}}}}
+    a.diff(g).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"con"=>{"check constraint definition"=>{"(a > 0)"=>"(a < 0)"}}}}}}}}
     e.diff(f).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"removed"=>["test_table_a_check"]}}}}}}
   end
 
@@ -126,11 +130,11 @@ describe PGExaminer do
     b.should_not == e
     d.should_not == e
 
-    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
-    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int2)"}}}}}}}}
-    b.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"}}}}}}}}
-    b.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1)"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
-    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"constraint definition"=>{"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON UPDATE CASCADE"=>"FOREIGN KEY (parent_id) REFERENCES parent(int1) ON DELETE CASCADE"}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"index"=>{"parent_pkey"=>"parent_int2_key"}, "foreign constrained columns"=>{["int1"]=>["int2"]}}}}}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"index"=>{"parent_pkey"=>"parent_int2_key"}, "foreign constrained columns"=>{["int1"]=>["int2"]}}}}}}}}
+    b.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update"=>{"a"=>"c"}}}}}}}}
+    b.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on delete"=>{"a"=>"c"}}}}}}}}
+    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update"=>{"c"=>"a"}, "foreign key on delete"=>{"a"=>"c"}}}}}}}}
   end
 
   it "should consider constraints when determining table equivalency" do
@@ -161,8 +165,8 @@ describe PGExaminer do
     a.should_not == c
     b.should == c
 
-    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"con"=>{"constraint definition"=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
-    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"con"=>{"constraint definition"=>{"CHECK ((a > 0)) NOT VALID"=>"CHECK ((a > 0))"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"con"=>{"constraint is validated"=>{"f"=>"t"}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"con"=>{"constraint is validated"=>{"f"=>"t"}}}}}}}}
   end
 
   it "should consider the tables each constraint is on" do

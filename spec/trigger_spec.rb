@@ -303,8 +303,8 @@ describe PGExaminer do
       CREATE CONSTRAINT TRIGGER trig AFTER INSERT ON test_table DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE func();
     SQL
 
-    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint definition"=>{"TRIGGER"=>"TRIGGER DEFERRABLE"}}}}}}}}
-    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint definition"=>{"TRIGGER"=>"TRIGGER DEFERRABLE INITIALLY DEFERRED"}}}}}}}}
-    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint definition"=>{"TRIGGER DEFERRABLE"=>"TRIGGER DEFERRABLE INITIALLY DEFERRED"}}}}}}}}
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint is deferrable"=>{"f"=>"t"}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint is deferrable"=>{"f"=>"t"}, "constraint is initially deferred"=>{"f"=>"t"}}}}}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"trig"=>{"constraint is initially deferred"=>{"f"=>"t"}}}}}}}}
   end
 end

@@ -83,7 +83,7 @@ module PGExaminer
       SQL
 
       @pg_index = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
-        SELECT c.relname AS name, i.indrelid, i.indkey, indisunique, indisprimary,
+        SELECT i.indexrelid, c.relname AS name, i.indrelid, i.indkey, indisunique, indisprimary,
           pg_get_expr(i.indpred, i.indrelid) AS filter,
           pg_get_expr(i.indexprs, i.indrelid) AS expression
         FROM pg_index i
@@ -92,8 +92,10 @@ module PGExaminer
       SQL
 
       @pg_constraint = load_table @pg_class.map{|ns| ns['oid']}, <<-SQL
-        SELECT oid, conname AS name, conrelid,
-          pg_get_constraintdef(oid) AS definition
+        SELECT oid, conname AS name, conrelid, contype,
+          condeferrable, condeferred, convalidated,
+          contypid, conindid, confrelid, confupdtype, confdeltype, confmatchtype,
+          connoinherit, conkey, confkey, consrc
         FROM pg_constraint c
         WHERE conrelid IN (?)
       SQL

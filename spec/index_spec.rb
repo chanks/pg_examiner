@@ -297,9 +297,9 @@ describe PGExaminer do
     d.should == d2
     e.should == e2
 
-    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint definition"=>{"UNIQUE (a)"=>"UNIQUE (a) DEFERRABLE"}}}}}}}}
-    a.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint definition"=>{"UNIQUE (a)"=>"UNIQUE (a) DEFERRABLE"}}}}}}}}
-    c.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint definition"=>{"UNIQUE (a) DEFERRABLE"=>"UNIQUE (a) DEFERRABLE INITIALLY DEFERRED"}}}}}}}}
-    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint definition"=>{"UNIQUE (a) DEFERRABLE"=>"UNIQUE (a) DEFERRABLE INITIALLY DEFERRED"}}}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint is deferrable"=>{"f"=>"t"}}}}}}}}
+    a.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint is deferrable"=>{"f"=>"t"}}}}}}}}
+    c.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint is initially deferred"=>{"f"=>"t"}}}}}}}}
+    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"test_table_a_key"=>{"constraint is initially deferred"=>{"f"=>"t"}}}}}}}}
   end
 end
