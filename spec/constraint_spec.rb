@@ -293,5 +293,60 @@ describe PGExaminer do
       a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key match type"=>{"simple"=>"full"}}}}}}}}
       b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key match type"=>{"simple"=>"full"}}}}}}}}
     end
+
+    describe "when comparing two schemas" do
+      it "should understand that tables will point to tables in their own schema" do
+        a = examine <<-SQL, "schema1"
+          CREATE SCHEMA schema1;
+          CREATE TABLE schema1.parent (int1 integer PRIMARY KEY);
+          CREATE TABLE schema1.child (parent_id integer REFERENCES schema1.parent);
+        SQL
+
+        b = examine <<-SQL, "schema2"
+          CREATE SCHEMA schema2;
+          CREATE TABLE schema2.parent (int1 integer PRIMARY KEY);
+          CREATE TABLE schema2.child (parent_id integer REFERENCES schema2.parent);
+        SQL
+
+        c = examine <<-SQL, "schema2"
+          CREATE SCHEMA schema1;
+          CREATE TABLE schema1.parent (int1 integer PRIMARY KEY);
+
+          CREATE SCHEMA schema2;
+          CREATE TABLE schema2.parent (int1 integer PRIMARY KEY);
+          CREATE TABLE schema2.child (parent_id integer REFERENCES schema1.parent);
+        SQL
+
+        a.should == b
+        b.diff(c).should == {"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"table referenced by foreign key"=>{["(same schema)", "parent"]=>["schema1 schema", "parent"]}}}}}}
+      end
+
+      it "should understand when tables point to a table in public" do
+        a = examine <<-SQL, "schema1"
+          CREATE TABLE parent (int1 integer PRIMARY KEY);
+          CREATE SCHEMA schema1;
+          CREATE TABLE schema1.parent (int1 integer PRIMARY KEY);
+          CREATE TABLE schema1.child (parent_id integer REFERENCES parent);
+        SQL
+
+        b = examine <<-SQL, "schema2"
+          CREATE TABLE parent (int1 integer PRIMARY KEY);
+          CREATE SCHEMA schema2;
+          CREATE TABLE schema2.parent (int1 integer PRIMARY KEY);
+          CREATE TABLE schema2.child (parent_id integer REFERENCES parent);
+        SQL
+
+        c = examine <<-SQL, "schema1"
+          CREATE TABLE parent (int1 integer PRIMARY KEY);
+
+          CREATE SCHEMA schema1;
+          CREATE TABLE schema1.parent (int1 integer PRIMARY KEY);
+          CREATE TABLE schema1.child (parent_id integer REFERENCES schema1.parent);
+        SQL
+
+        a.should == b
+        b.diff(c).should == {"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"table referenced by foreign key"=>{["public schema", "parent"]=>["(same schema)", "parent"]}}}}}}
+      end
+    end
   end
 end

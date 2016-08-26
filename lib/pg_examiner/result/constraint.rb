@@ -37,20 +37,28 @@ module PGExaminer
       end
 
       def foreign_table_name
-        foreign_table.name if foreign_table
+        if ft = foreign_table
+          this_schema_name = parent.parent.name
+          that_schema_name = ft.parent.name
+
+          relative_schema =
+            if this_schema_name == that_schema_name
+              "(same schema)"
+            else
+              "#{that_schema_name} schema"
+            end
+
+          [relative_schema, ft.name]
+        end
       end
 
       def foreign_table
         if row['confrelid'] != '0'
           @foreign_table ||= begin
-            table  = parent
-            schema = table.parent
-
-            unless t = schema.tables.find{|t| t.oid == row['confrelid']}
-              raise "Table targeted by foreign key doesn't exist in the same schema"
-            end
-
-            t
+            # Look up the table, which may be outside our own schema.
+            table_row = result.pg_class.find { |c| c['relkind'] == 'r' && c['oid'] == row['confrelid'] }
+            schema = result.schemas.find { |s| s.oid == table_row['relnamespace'] }
+            schema.tables.find { |t| t.name == table_row['name'] }
           end
         end
       end
