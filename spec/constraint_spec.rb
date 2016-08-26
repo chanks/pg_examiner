@@ -63,116 +63,31 @@ describe PGExaminer do
     e.diff(f).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"removed"=>["test_table_a_check"]}}}}}}
   end
 
-  it "should consider foreign keys when differentiating between schemas" do
+  it "should consider the tables each constraint is on" do
     a = examine <<-SQL
-      CREATE TABLE parent (
-        int1 integer PRIMARY KEY,
-        int2 integer UNIQUE
+      CREATE TABLE test_table_1 (
+        a integer,
+        CONSTRAINT con CHECK (a > 0)
       );
 
-      CREATE TABLE child (
-        parent_id integer REFERENCES parent
+      CREATE TABLE test_table_2 (
+        a integer
       );
     SQL
 
     b = examine <<-SQL
-      CREATE TABLE parent (
-        int1 integer PRIMARY KEY,
-        int2 integer UNIQUE
+      CREATE TABLE test_table_1 (
+        a integer
       );
 
-      CREATE TABLE child (
-        parent_id integer,
-        FOREIGN KEY (parent_id) REFERENCES parent
-      );
-    SQL
-
-    c = examine <<-SQL
-      CREATE TABLE parent (
-        int1 integer PRIMARY KEY,
-        int2 integer UNIQUE
-      );
-
-      CREATE TABLE child (
-        parent_id integer,
-        FOREIGN KEY (parent_id) REFERENCES parent (int2)
+      CREATE TABLE test_table_2 (
+        a integer,
+        CONSTRAINT con CHECK (a > 0)
       );
     SQL
 
-    d = examine <<-SQL
-      CREATE TABLE parent (
-        int1 integer PRIMARY KEY,
-        int2 integer UNIQUE
-      );
-
-      CREATE TABLE child (
-        parent_id integer,
-        FOREIGN KEY (parent_id) REFERENCES parent ON UPDATE CASCADE
-      );
-    SQL
-
-    e = examine <<-SQL
-      CREATE TABLE parent (
-        int1 integer PRIMARY KEY,
-        int2 integer UNIQUE
-      );
-
-      CREATE TABLE child (
-        parent_id integer,
-        FOREIGN KEY (parent_id) REFERENCES parent ON DELETE CASCADE
-      );
-    SQL
-
-    f = examine <<-SQL
-      CREATE TABLE parent (
-        int1 integer PRIMARY KEY,
-        int2 integer UNIQUE
-      );
-
-      CREATE TABLE child (
-        parent_id integer,
-        FOREIGN KEY (parent_id) REFERENCES parent MATCH FULL ON DELETE CASCADE
-      );
-    SQL
-
-    g = examine <<-SQL
-      CREATE TABLE parent (
-        int1 integer PRIMARY KEY
-      );
-
-      CREATE TABLE child (
-        parent_id1 integer,
-        parent_id2 integer,
-        CONSTRAINT fkey FOREIGN KEY (parent_id1) REFERENCES parent
-      );
-    SQL
-
-    h = examine <<-SQL
-      CREATE TABLE parent (
-        int1 integer PRIMARY KEY
-      );
-
-      CREATE TABLE child (
-        parent_id1 integer,
-        parent_id2 integer,
-        CONSTRAINT fkey FOREIGN KEY (parent_id2) REFERENCES parent
-      );
-    SQL
-
-    a.should == b
-    a.should_not == c
-    b.should_not == c
-    b.should_not == d
-    b.should_not == e
-    d.should_not == e
-
-    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"index"=>{"parent_pkey"=>"parent_int2_key"}, "foreign constrained columns"=>{["int1"]=>["int2"]}}}}}}}}
-    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"index"=>{"parent_pkey"=>"parent_int2_key"}, "foreign constrained columns"=>{["int1"]=>["int2"]}}}}}}}}
-    b.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update action"=>{"no action"=>"cascade"}}}}}}}}
-    b.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on delete action"=>{"no action"=>"cascade"}}}}}}}}
-    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update action"=>{"cascade"=>"no action"}, "foreign key on delete action"=>{"no action"=>"cascade"}}}}}}}}
-    e.diff(f).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key match type"=>{"simple"=>"full"}}}}}}}}
-    g.diff(h).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"fkey"=>{"local constrained columns"=>{["parent_id1"]=>["parent_id2"]}}}}}}}}
+    a.should_not == b
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table_1"=>{"constraints"=>{"removed"=>["con"]}}, "test_table_2"=>{"constraints"=>{"added"=>["con"]}}}}}}
   end
 
   it "should consider constraint validation when determining table equivalency" do
@@ -207,57 +122,176 @@ describe PGExaminer do
     a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"constraints"=>{"con"=>{"constraint is validated"=>{"f"=>"t"}}}}}}}}
   end
 
-  it "should consider the tables each constraint is on" do
-    a = examine <<-SQL
-      CREATE TABLE test_table_1 (
-        a integer,
-        CONSTRAINT con CHECK (a > 0)
-      );
+  describe "when considering foreign keys" do
+    it "should consider their presence" do
+      a = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
 
-      CREATE TABLE test_table_2 (
-        a integer
-      );
-    SQL
+        CREATE TABLE child (
+          parent_id integer
+        );
+      SQL
 
-    b = examine <<-SQL
-      CREATE TABLE test_table_1 (
-        a integer
-      );
+      b = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
 
-      CREATE TABLE test_table_2 (
-        a integer,
-        CONSTRAINT con CHECK (a > 0)
-      );
-    SQL
+        CREATE TABLE child (
+          parent_id integer REFERENCES parent
+        );
+      SQL
 
-    a.should_not == b
-    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table_1"=>{"constraints"=>{"removed"=>["con"]}}, "test_table_2"=>{"constraints"=>{"added"=>["con"]}}}}}}
-  end
+      a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"added"=>["child_parent_id_fkey"]}}}}}}
+    end
 
-  it "should consider the tables that foreign key constraints point to" do
-    a = examine <<-SQL
-      CREATE TABLE test_table_1 (
-        a integer,
-        CONSTRAINT con CHECK (a > 0)
-      );
+    it "should consider the remote columns of foreign keys when differentiating between schemas" do
+      a = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY,
+          int2 integer UNIQUE
+        );
 
-      CREATE TABLE test_table_2 (
-        a integer
-      );
-    SQL
+        CREATE TABLE child (
+          parent_id integer REFERENCES parent
+        );
+      SQL
 
-    b = examine <<-SQL
-      CREATE TABLE test_table_1 (
-        a integer
-      );
+      b = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY,
+          int2 integer UNIQUE
+        );
 
-      CREATE TABLE test_table_2 (
-        a integer,
-        CONSTRAINT con CHECK (a > 0)
-      );
-    SQL
+        CREATE TABLE child (
+          parent_id integer,
+          FOREIGN KEY (parent_id) REFERENCES parent (int1)
+        );
+      SQL
 
-    a.should_not == b
-    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table_1"=>{"constraints"=>{"removed"=>["con"]}}, "test_table_2"=>{"constraints"=>{"added"=>["con"]}}}}}}
+      c = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY,
+          int2 integer UNIQUE
+        );
+
+        CREATE TABLE child (
+          parent_id integer,
+          FOREIGN KEY (parent_id) REFERENCES parent (int2)
+        );
+      SQL
+
+      a.should == b
+      a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"index"=>{"parent_pkey"=>"parent_int2_key"}, "foreign constrained columns"=>{["int1"]=>["int2"]}}}}}}}}
+      b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"index"=>{"parent_pkey"=>"parent_int2_key"}, "foreign constrained columns"=>{["int1"]=>["int2"]}}}}}}}}
+    end
+
+    it "should consider the local columns of the foreign keys" do
+      a = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
+
+        CREATE TABLE child (
+          parent_id1 integer,
+          parent_id2 integer,
+          CONSTRAINT fkey FOREIGN KEY (parent_id1) REFERENCES parent
+        );
+      SQL
+
+      b = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
+
+        CREATE TABLE child (
+          parent_id1 integer,
+          parent_id2 integer,
+          CONSTRAINT fkey FOREIGN KEY (parent_id2) REFERENCES parent
+        );
+      SQL
+
+      a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"fkey"=>{"local constrained columns"=>{["parent_id1"]=>["parent_id2"]}}}}}}}}
+    end
+
+    it "should consider on update/delete actions" do
+      a = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
+
+        CREATE TABLE child (
+          parent_id integer,
+          FOREIGN KEY (parent_id) REFERENCES parent
+        );
+      SQL
+
+      b = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
+
+        CREATE TABLE child (
+          parent_id integer,
+          FOREIGN KEY (parent_id) REFERENCES parent ON UPDATE CASCADE
+        );
+      SQL
+
+      c = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
+
+        CREATE TABLE child (
+          parent_id integer,
+          FOREIGN KEY (parent_id) REFERENCES parent ON DELETE CASCADE
+        );
+      SQL
+
+      a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update action"=>{"no action"=>"cascade"}}}}}}}}
+      a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on delete action"=>{"no action"=>"cascade"}}}}}}}}
+      b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update action"=>{"cascade"=>"no action"}, "foreign key on delete action"=>{"no action"=>"cascade"}}}}}}}}
+    end
+
+    it "should consider match simple/full" do
+      a = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
+
+        CREATE TABLE child (
+          parent_id integer,
+          FOREIGN KEY (parent_id) REFERENCES parent
+        );
+      SQL
+
+      b = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
+
+        CREATE TABLE child (
+          parent_id integer,
+          FOREIGN KEY (parent_id) REFERENCES parent MATCH SIMPLE
+        );
+      SQL
+
+      c = examine <<-SQL
+        CREATE TABLE parent (
+          int1 integer PRIMARY KEY
+        );
+
+        CREATE TABLE child (
+          parent_id integer,
+          FOREIGN KEY (parent_id) REFERENCES parent MATCH FULL
+        );
+      SQL
+
+      a.diff(b).should == {}
+      a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key match type"=>{"simple"=>"full"}}}}}}}}
+      b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key match type"=>{"simple"=>"full"}}}}}}}}
+    end
   end
 end
