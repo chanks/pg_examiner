@@ -95,7 +95,7 @@ module PGExaminer
         SELECT oid, conname AS name, conrelid, contype,
           condeferrable, condeferred, convalidated,
           contypid, conindid, confrelid, confupdtype, confdeltype, confmatchtype,
-          connoinherit, conkey, confkey, consrc
+          connoinherit, conkey, confkey, pg_get_expr(conbin, conrelid) AS check_def
         FROM pg_constraint c
         WHERE conrelid IN (?)
       SQL

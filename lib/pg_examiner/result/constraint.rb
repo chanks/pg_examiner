@@ -11,7 +11,7 @@ module PGExaminer
           "condeferred"   => "constraint is initially deferred",
           "convalidated"  => "constraint is validated",
           "connoinherit"  => "constraint is not inheritable",
-          "consrc"        => "check constraint definition",
+          "check_def"     => "check constraint definition",
         }
       end
 
