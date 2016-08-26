@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe PGExaminer do
-  it "should consider constraints when determining table equivalency" do
+  it "should consider check constraints when determining table equivalency" do
     a = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
@@ -123,6 +123,42 @@ describe PGExaminer do
       );
     SQL
 
+    f = examine <<-SQL
+      CREATE TABLE parent (
+        int1 integer PRIMARY KEY,
+        int2 integer UNIQUE
+      );
+
+      CREATE TABLE child (
+        parent_id integer,
+        FOREIGN KEY (parent_id) REFERENCES parent MATCH FULL ON DELETE CASCADE
+      );
+    SQL
+
+    g = examine <<-SQL
+      CREATE TABLE parent (
+        int1 integer PRIMARY KEY
+      );
+
+      CREATE TABLE child (
+        parent_id1 integer,
+        parent_id2 integer,
+        CONSTRAINT fkey FOREIGN KEY (parent_id1) REFERENCES parent
+      );
+    SQL
+
+    h = examine <<-SQL
+      CREATE TABLE parent (
+        int1 integer PRIMARY KEY
+      );
+
+      CREATE TABLE child (
+        parent_id1 integer,
+        parent_id2 integer,
+        CONSTRAINT fkey FOREIGN KEY (parent_id2) REFERENCES parent
+      );
+    SQL
+
     a.should == b
     a.should_not == c
     b.should_not == c
@@ -135,9 +171,11 @@ describe PGExaminer do
     b.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update action"=>{"no action"=>"cascade"}}}}}}}}
     b.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on delete action"=>{"no action"=>"cascade"}}}}}}}}
     d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update action"=>{"cascade"=>"no action"}, "foreign key on delete action"=>{"no action"=>"cascade"}}}}}}}}
+    e.diff(f).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key match type"=>{"simple"=>"full"}}}}}}}}
+    g.diff(h).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"fkey"=>{"local constrained columns"=>{["parent_id1"]=>["parent_id2"]}}}}}}}}
   end
 
-  it "should consider constraints when determining table equivalency" do
+  it "should consider constraint validation when determining table equivalency" do
     a = examine <<-SQL
       CREATE TABLE test_table (
         a integer,
@@ -170,6 +208,33 @@ describe PGExaminer do
   end
 
   it "should consider the tables each constraint is on" do
+    a = examine <<-SQL
+      CREATE TABLE test_table_1 (
+        a integer,
+        CONSTRAINT con CHECK (a > 0)
+      );
+
+      CREATE TABLE test_table_2 (
+        a integer
+      );
+    SQL
+
+    b = examine <<-SQL
+      CREATE TABLE test_table_1 (
+        a integer
+      );
+
+      CREATE TABLE test_table_2 (
+        a integer,
+        CONSTRAINT con CHECK (a > 0)
+      );
+    SQL
+
+    a.should_not == b
+    a.diff(b).should == {"schemas"=>{"public"=>{"tables"=>{"test_table_1"=>{"constraints"=>{"removed"=>["con"]}}, "test_table_2"=>{"constraints"=>{"added"=>["con"]}}}}}}
+  end
+
+  it "should consider the tables that foreign key constraints point to" do
     a = examine <<-SQL
       CREATE TABLE test_table_1 (
         a integer,
