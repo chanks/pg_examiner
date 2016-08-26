@@ -11,9 +11,6 @@ module PGExaminer
           "condeferred"   => "constraint is initially deferred",
           "convalidated"  => "constraint is validated",
           "connoinherit"  => "constraint is not inheritable",
-          "confupdtype"   => "foreign key on update",
-          "confdeltype"   => "foreign key on delete",
-          "confmatchtype" => "foreign key match type",
           "consrc"        => "check constraint definition",
         }
       end
@@ -25,6 +22,9 @@ module PGExaminer
           "foreign_table_name"          => "table referenced by foreign key",
           "constrained_columns"         => "local constrained columns",
           "foreign_constrained_columns" => "foreign constrained columns",
+          "foreign_key_update_action"   => "foreign key on update action",
+          "foreign_key_delete_action"   => "foreign key on delete action",
+          "foreign_key_match_type"      => "foreign key match type",
         }
       end
 
@@ -61,6 +61,32 @@ module PGExaminer
 
       def foreign_constrained_columns
         @foreign_constrained_columns ||= extract_array(row['confkey']).map{|n| foreign_table.columns.find{|c| c.row['attnum'] == n}.name} if row['confkey']
+      end
+
+      FOREIGN_KEY_ACTIONS = {
+        "a" => "no action",
+        "r" => "restrict",
+        "c" => "cascade",
+        "n" => "set null",
+        "d" => "set default",
+      }.freeze
+
+      def foreign_key_update_action
+        FOREIGN_KEY_ACTIONS.fetch(row['confupdtype']) if row['confupdtype'] != ' '
+      end
+
+      def foreign_key_delete_action
+        FOREIGN_KEY_ACTIONS.fetch(row['confdeltype']) if row['confdeltype'] != ' '
+      end
+
+      FOREIGN_KEY_MATCH_TYPES = {
+        "f" => "full",
+        "p" => "partial",
+        "s" => "simple",
+      }.freeze
+
+      def foreign_key_match_type
+        FOREIGN_KEY_MATCH_TYPES.fetch(row['confmatchtype']) if row['confmatchtype'] != ' '
       end
     end
   end

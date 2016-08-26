@@ -132,9 +132,9 @@ describe PGExaminer do
 
     a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"index"=>{"parent_pkey"=>"parent_int2_key"}, "foreign constrained columns"=>{["int1"]=>["int2"]}}}}}}}}
     b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"index"=>{"parent_pkey"=>"parent_int2_key"}, "foreign constrained columns"=>{["int1"]=>["int2"]}}}}}}}}
-    b.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update"=>{"a"=>"c"}}}}}}}}
-    b.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on delete"=>{"a"=>"c"}}}}}}}}
-    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update"=>{"c"=>"a"}, "foreign key on delete"=>{"a"=>"c"}}}}}}}}
+    b.diff(d).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update action"=>{"no action"=>"cascade"}}}}}}}}
+    b.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on delete action"=>{"no action"=>"cascade"}}}}}}}}
+    d.diff(e).should == {"schemas"=>{"public"=>{"tables"=>{"child"=>{"constraints"=>{"child_parent_id_fkey"=>{"foreign key on update action"=>{"cascade"=>"no action"}, "foreign key on delete action"=>{"no action"=>"cascade"}}}}}}}}
   end
 
   it "should consider constraints when determining table equivalency" do
