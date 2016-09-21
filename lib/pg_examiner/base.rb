@@ -58,8 +58,8 @@ module PGExaminer
           removed = these_names - those_names
 
           h = {}
-          h['added']   = added   if added.any?
-          h['removed'] = removed if removed.any?
+          h['added']   = added.sort   if added.any?
+          h['removed'] = removed.sort if removed.any?
           r[description] = h
         end
       end

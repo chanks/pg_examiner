@@ -49,6 +49,7 @@ describe PGExaminer do
       $$
       LANGUAGE plpgsql;
 
+      CREATE TRIGGER trig3 BEFORE INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func();
       CREATE TRIGGER trig2 BEFORE INSERT ON test_table FOR EACH ROW EXECUTE PROCEDURE func();
     SQL
 
@@ -56,8 +57,8 @@ describe PGExaminer do
     a.should_not == c
     b.should_not == c
 
-    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"added"=>["trig2"], "removed"=>["trig"]}}}}}}
-    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"added"=>["trig2"], "removed"=>["trig"]}}}}}}
+    a.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"added"=>["trig2", "trig3"], "removed"=>["trig"]}}}}}}
+    b.diff(c).should == {"schemas"=>{"public"=>{"tables"=>{"test_table"=>{"triggers"=>{"added"=>["trig2", "trig3"], "removed"=>["trig"]}}}}}}
   end
 
   it "should be able to differentiate between triggers by their parent tables" do
