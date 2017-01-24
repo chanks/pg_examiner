@@ -92,10 +92,17 @@ describe PGExaminer do
 
   it "should consider constraint validation when determining table equivalency" do
     a = examine <<-SQL
+      -- In Postgres 9.6 and up, you can't simply declare that a check
+      -- constraint on a new table isn't valid - they're always considered valid
+      -- for a new table.
       CREATE TABLE test_table (
-        a integer,
-        CONSTRAINT con CHECK (a > 0) NOT VALID
+        a integer
       );
+
+      INSERT INTO test_table (a) VALUES (1);
+
+      ALTER TABLE test_table
+        ADD CONSTRAINT con CHECK (a > 0) NOT VALID;
     SQL
 
     b = examine <<-SQL
