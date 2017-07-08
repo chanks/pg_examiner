@@ -4,7 +4,7 @@ require 'spec_helper'
 
 describe PGExaminer do
   it "should be able to tell when a sequence exists" do
-    a = examine ""
+    a = examine "SELECT 1" # No-op.
 
     b = examine <<-SQL
       CREATE SEQUENCE my_sequence;
