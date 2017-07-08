@@ -51,6 +51,8 @@ Or install it yourself as:
   state1 == state2 # => true or false
 ```
 
+Note that while the 'pg' gem is not a hard dependency, for compatibility with JRuby, you will need either the 'pg' or 'jruby-pg' gem.
+
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/pg_examiner/fork )
