@@ -3,6 +3,11 @@
 module PGExaminer
   class Result
     class Extension < Item
+      def initialize(*args)
+        super
+        @schema_calculated = false
+      end
+
       def diffable_attrs
         {
           "name"       => "name",

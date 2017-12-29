@@ -3,6 +3,11 @@
 module PGExaminer
   class Result
     class Column < Item
+      def initialize(*args)
+        super
+        @default_calculated = false
+      end
+
       def diffable_methods
         {
           "type"    => "type",
