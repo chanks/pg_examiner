@@ -64,7 +64,7 @@ module PGExaminer
       SQL
 
       @pg_class = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
-        SELECT oid, relname AS name, relkind, relpersistence, reloptions, relnamespace
+        SELECT oid, relname AS name, relkind, relpersistence, reloptions, relnamespace, relacl
         FROM pg_class
         WHERE relnamespace IN (?)
       SQL

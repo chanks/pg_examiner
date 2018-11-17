@@ -9,6 +9,7 @@ module PGExaminer
           "indexes"     => "indexes",
           "constraints" => "constraints",
           "triggers"    => "triggers",
+          "permissions" => "permissions",
         }
       end
 
@@ -42,6 +43,43 @@ module PGExaminer
         @triggers ||= result.pg_trigger.select do |t|
           t['tgrelid'] == oid
         end.map{|row| Trigger.new(result, row, self)}.sort_by(&:name)
+      end
+
+      def permissions
+        @permissions ||= begin
+          if acl = @row["relacl"]
+            acl[/^{(.*)}$/, 1].split(",").map{|acl| Permission.new(acl)}.sort_by(&:name)
+          else
+            []
+          end
+        end
+      end
+
+      class Permission < Base
+        attr_accessor :name, :grantor, :permissions
+
+        CHARS_TO_LABELS = {
+          "r" => "SELECT", # "read"
+          "w" => "UPDATE", # "write"
+          "a" => "INSERT", # "append"
+          "d" => "DELETE",
+          "D" => "TRUNCATE",
+          "x" => "REFERENCES",
+          "t" => "TRIGGER",
+        }.freeze
+
+        def initialize(acl)
+          @name, permissions = acl.split("=")
+          permissions, @grantor = permissions.split("/")
+          @permissions = permissions.split("").map{|char| CHARS_TO_LABELS.fetch(char)}
+        end
+
+        def diffable_methods
+          {
+            "grantor"     => "grantor",
+            "permissions" => "permissions",
+          }
+        end
       end
     end
   end
