@@ -112,12 +112,22 @@ module PGExaminer
         FROM pg_attrdef
       SQL
 
-      @pg_proc = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
-        SELECT oid, proname AS name, pronamespace, proargtypes, prorettype, proargmodes, prolang, pg_get_functiondef(oid) AS definition
-        FROM pg_proc
-        WHERE pronamespace IN (?)
-        AND prokind <> 'a' -- prevent pg_get_functiondef() from throwing errors on aggregate functions.
-      SQL
+      # Handle change to system table in PG 11.
+      if @conn.server_version >= 110000
+        @pg_proc = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
+          SELECT oid, proname AS name, pronamespace, proargtypes, prorettype, proargmodes, prolang, pg_get_functiondef(oid) AS definition
+          FROM pg_proc
+          WHERE pronamespace IN (?)
+          AND prokind <> 'a' -- prevent pg_get_functiondef() from throwing errors on aggregate functions.
+        SQL
+      else
+        @pg_proc = load_table @pg_namespace.map{|ns| ns['oid']}, <<-SQL
+          SELECT oid, proname AS name, pronamespace, proargtypes, prorettype, proargmodes, prolang, pg_get_functiondef(oid) AS definition
+          FROM pg_proc
+          WHERE pronamespace IN (?)
+          AND NOT proisagg -- prevent pg_get_functiondef() from throwing errors on aggregate functions.
+        SQL
+      end
 
       @pg_extension = execute <<-SQL
         SELECT extname AS name, extnamespace, extversion
